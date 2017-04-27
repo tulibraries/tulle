@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TUL Link Exchanger</title>
+    <style>
+      input[type=text] {
+        width: 30%
+      }
+    </style>
+</head>
+<body>
+    <div class="container" align=center>
+        <h1><a href="<%= @application_url %>">TUL Link Exchanger</a></h1>
+        <p>Exchange diamond.temple.edu item links for permanent URLs</p>
+        <form method="post">
+            <input type="text" value="<%= h(params[:url]) %>" name="url" id="url" />
+            <input type="submit" value="Exchange" id="submit" />
+        </form>
+        <div class="clear"></div>
+        <% if not @shortened_url.nil? %>
+        <div class="result">
+          <p>
+            Your shortened URL is:
+          </p>
+          <p>
+            <a href="<%= @shortened_url %>"><%= @shortened_url %></a>
+            <!--
+                      __________________
+                    .-'  \ _.-''-._ /  '-.
+                  .-/\   .'.      .'.   /\-.
+                 _'/  \.'   '.  .'   './  \'_
+                :======:======::======:======:
+                 '. '.  \     ''     /  .' .'
+                   '. .  \   :  :   /  . .'
+                     '.'  \  '  '  /  '.'
+                       ':  \:    :/  :'
+                         '. \    / .'
+                           '.\  /.'    miK
+                             '\/'
+
+              diamonds are forever / unlike men, the diamonds linger
+            -->
+          </p>
+        </div>
+        <% end %>
+    </div>
+</body>
