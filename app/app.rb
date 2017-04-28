@@ -58,13 +58,15 @@ class Tulle < Sinatra::Base
 
     #puts  @db_mms2iep.stat[:entries]
 
-    if( @@db_mms2iep.stat[:entries] <= 1 )
-      puts Time.now.to_i
-      CSV.foreach("publishing.csv", :headers => true) do |row|   # :converters => :integer
-        mms, iep = row
-        @@db_mms2iep[mms.to_s] = iep.to_s
+    if File.exist? "publishing.csv"
+      if( @@db_mms2iep.stat[:entries] <= 1 )
+        puts Time.now.to_i
+        CSV.foreach("publishing.csv", :headers => true) do |row|   # :converters => :integer
+          mms, iep = row
+          @@db_mms2iep[mms.to_s] = iep.to_s
+        end
+        puts Time.now.to_i
       end
-      puts Time.now.to_i
     end
   end
 
