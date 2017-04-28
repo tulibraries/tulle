@@ -1,6 +1,6 @@
 require 'sinatra/base'
 require 'csv'
-require 'pry'
+#require 'pry'
 require 'lmdb'
 
 class Tulle < Sinatra::Base
