@@ -74,7 +74,7 @@ class Tulle < Sinatra::Base
     include Rack::Utils
     alias_method :h, :escape_html
 
-    def url_hash( *url_id )
+    def url_hash( url_id = '' )
       #TODO ensure no collisions?
       haststr = ''
       if !url_id.nil? and !url_id.empty?
@@ -164,7 +164,6 @@ class Tulle < Sinatra::Base
       if uri.host == "diamond.temple.edu"
         path_tokens = uri.path.split(/[=,~]/)
         item_id = path_tokens[1]
-        #binding.pry
         shortcode = url_hash( item_id )
         @@db_diamond[shortcode] = item_id
       else #arbitrary links allowed?
