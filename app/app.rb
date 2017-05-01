@@ -6,7 +6,7 @@ require 'lmdb'
 class Tulle < Sinatra::Base
 
   @@SHORTENER_SCHEME = 'http://'
-  @@SHORTENER_HOST = '127.0.0.1:9393/'
+  @@SHORTENER_HOST = '45.33.71.165'  #'library.temple.edu/'  #'127.0.0.1:9393/'
   @@SHORTENER_PATH = 'r/'
   @@SHORTENER_ERR_ROUTE = 'err/'
 
@@ -28,7 +28,7 @@ class Tulle < Sinatra::Base
   # @@TARGET_PATH = 'catalog/'
   # @@TARGET_QUERY = ''
 
-  # search thoughtz
+  # search~thoughtz
   # http://exl-impl-primo.hosted.exlibrisgroup.com/primo-explore/search?query=any,contains,otters&vid=01TULI
   # http://diamond.temple.edu/search/?searchtype=X&searcharg=otters
   # http://temple.summon.serialssolutions.com/#!/search?bookMark=ePnHCXMw42LgTQStzc4rAe_hSmEGH2NjAWw3WIAa4lxG4BNAQKeosDGIaoQnBqcGB2tCC04jQzNzY1MO2BAJlM_JwOYPPmqSm0HezTXE2UMXdGpTTmo8dIAjPgl0wIwpsPNsTFgFADzeKa0
@@ -134,13 +134,11 @@ class Tulle < Sinatra::Base
 
 
   get '/' do
-  #  binding.pry
     erb :index
   end
 
   # else this is a straight redirect
   get '/*' do
-    #binding.pry
     path = params[:splat][0]
     perm_path = get_perm_path( path )
     redirect @@SHORTENER_SCHEME + @@SHORTENER_HOST + @@SHORTENER_PATH + perm_path, 302
