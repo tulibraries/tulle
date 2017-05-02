@@ -1,9 +1,8 @@
 require 'rubygems'
 require 'sinatra'
 require File.join(File.dirname(__FILE__), 'app/app.rb')
-logger = Logger.new('/home/sinatra/log/sinatra.log')
+logger = File.new('/home/sinatra/log/sinatra.log', "a")
 STDOUT.reopen(logger)
 STDERR.reopen(logger)
 
-use Rack::CommonLogger, logger
 run Tulle
