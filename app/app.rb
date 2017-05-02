@@ -123,11 +123,11 @@ class Tulle < Sinatra::Base
         link = @@db_customurls[linkid]
       elsif linkid.length > @@cust_hash_length
         diamond_id = @@db_diamond[linkid]
-        link = @@DIAMOND_SCHEME + @@DIAMOND_HOST + @@DIAMOND_PATH + diamond_id + @@DIAMOND_AFFIX
+        link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_AFFIX
       else
       end
     rescue
-      link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => @@SHORTENER_ERR_ROUTE)
+      link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_ERR_ROUTE)
     end
   	redirect link, 301
   end
@@ -141,7 +141,7 @@ class Tulle < Sinatra::Base
   get '/*' do
     path = params[:splat][0]
     perm_path = get_perm_path( path )
-    redirect URI::HTTP.build(:host => @@SHORTENER_HOST, :path => @@SHORTENER_PATH + '/' + perm_path), 302
+    redirect URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_PATH + '/' + perm_path), 302
     #302 found
   end
 
@@ -168,11 +168,11 @@ class Tulle < Sinatra::Base
         # shortcode = url_hash
         # item_id = @input_url
         # @@db_customurls[shortcode] = item_id
-        link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => @@SHORTENER_ERR_ROUTE)
+        link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_ERR_ROUTE)
         redirect link
       end
 
-      @shortened_url = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => @@SHORTENER_PATH + '/' + shortcode)
+      @shortened_url = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_PATH + '/' + shortcode)
 
     end
     erb :index
