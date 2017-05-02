@@ -6,19 +6,19 @@ require 'lmdb'
 class Tulle < Sinatra::Base
 
   @@SHORTENER_SCHEME = 'http://'
-  @@SHORTENER_HOST = '45.33.71.165/'  #'library.temple.edu/'  #'127.0.0.1:9393/'
-  @@SHORTENER_PATH = 'r/'
-  @@SHORTENER_ERR_ROUTE = 'err/'
+  @@SHORTENER_HOST = '45.33.71.165'  #'library.temple.edu/'  #'127.0.0.1:9393/'
+  @@SHORTENER_PATH = 'r'
+  @@SHORTENER_ERR_ROUTE = 'err'
 
   #http://diamond.temple.edu/record=b6296088~S30
   @@DIAMOND_SCHEME = 'http://'
-  @@DIAMOND_HOST = 'diamond.temple.edu/'
+  @@DIAMOND_HOST = 'diamond.temple.edu'
   @@DIAMOND_PATH = 'record='
   @@DIAMOND_AFFIX = '~S30'
 
   #http://exl-impl-primo.hosted.exlibrisgroup.com/primo-explore/fulldisplay?vid=01TULI&docid=01TULI_ALMA51183613160003811
   @@TARGET_SCHEME = 'http://'
-  @@TARGET_HOST = 'exl-impl-primo.hosted.exlibrisgroup.com/'
+  @@TARGET_HOST = 'exl-impl-primo.hosted.exlibrisgroup.com'
   @@TARGET_PATH = 'primo-explore/fulldisplay'
   @@TARGET_QUERY = '?vid=01TULI&docid='
 
@@ -54,7 +54,7 @@ class Tulle < Sinatra::Base
     @@db_mms2iep = @@env.database('publishing', create: true)
     @@db_diamond = @@env.database('diamond_db', create: true)
 
-    @application_url = @@SHORTENER_SCHEME + @@SHORTENER_HOST
+    @application_url = uri = URI::HTTP.build(:host => @@SHORTENER_HOST)
 
     #puts  @db_mms2iep.stat[:entries]
 
@@ -127,7 +127,7 @@ class Tulle < Sinatra::Base
       else
       end
     rescue
-      link = @@SHORTENER_SCHEME + @@SHORTENER_HOST + @@SHORTENER_ERR_ROUTE
+      link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => @@SHORTENER_ERR_ROUTE)
     end
   	redirect link, 301
   end
@@ -141,7 +141,7 @@ class Tulle < Sinatra::Base
   get '/*' do
     path = params[:splat][0]
     perm_path = get_perm_path( path )
-    redirect @@SHORTENER_SCHEME + @@SHORTENER_HOST + @@SHORTENER_PATH + perm_path, 302
+    redirect URI::HTTP.build(:host => @@SHORTENER_HOST, :path => @@SHORTENER_PATH + '/' + perm_path), 302
     #302 found
   end
 
@@ -154,7 +154,7 @@ class Tulle < Sinatra::Base
       @input_url = params[:url]
       uri = URI(@input_url)
 
-      if !uri.scheme #forgot the http:// ? let's help them out
+      if !uri.scheme #forgot the http:// ? let's help 'em out
         @input_url = @@DIAMOND_SCHEME + @input_url
         uri = URI(@input_url)
       end
@@ -168,11 +168,11 @@ class Tulle < Sinatra::Base
         # shortcode = url_hash
         # item_id = @input_url
         # @@db_customurls[shortcode] = item_id
-        link = @@SHORTENER_SCHEME + @@SHORTENER_HOST + @@SHORTENER_ERR_ROUTE
+        link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => @@SHORTENER_ERR_ROUTE)
         redirect link
       end
 
-      @shortened_url = @@SHORTENER_SCHEME + @@SHORTENER_HOST + @@SHORTENER_PATH + shortcode
+      @shortened_url = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => @@SHORTENER_PATH + '/' + shortcode)
 
     end
     erb :index
