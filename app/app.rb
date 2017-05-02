@@ -48,10 +48,11 @@ class Tulle < Sinatra::Base
 
   configure do  #  or def initialize ()
     #super()
+    enable :logging
     file = File.new("#{settings.root}/log/#{settings.environment}.log", 'a+')
     file.sync = true
     use Rack::CommonLogger, file
-        
+
     @@db_alma = @@env.database('alma_db', create: true)
     @@db_blacklight = @@env.database('blacklight_db', create: true)
     @@db_customurls = @@env.database('custom_urls', create: true)
@@ -133,7 +134,8 @@ class Tulle < Sinatra::Base
         link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_AFFIX)
       else
       end
-    rescue
+    rescue Exception => e
+      print e.message
       link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_ERR_ROUTE)
     end
   	redirect link, 301
