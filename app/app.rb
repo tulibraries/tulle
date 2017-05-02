@@ -119,7 +119,7 @@ class Tulle < Sinatra::Base
   end
 
   # route for short url
-  get '/' + @@SHORTENER_PATH + '*' do
+  get '/' + @@SHORTENER_PATH + '/' + '*' do
     link = ''
     begin
       print "new shorturl request:"
@@ -135,7 +135,9 @@ class Tulle < Sinatra::Base
       else
       end
     rescue Exception => e
+      print "shorturl generation error"
       print e.message
+      print e.backtrace.inspect
       link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_ERR_ROUTE)
     end
   	redirect link, 301
