@@ -123,7 +123,7 @@ class Tulle < Sinatra::Base
         link = @@db_customurls[linkid]
       elsif linkid.length > @@cust_hash_length
         diamond_id = @@db_diamond[linkid]
-        link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_AFFIX
+        link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_AFFIX)
       else
       end
     rescue
@@ -141,7 +141,8 @@ class Tulle < Sinatra::Base
   get '/*' do
     path = params[:splat][0]
     perm_path = get_perm_path( path )
-    redirect URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_PATH + '/' + perm_path), 302
+    link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_PATH + '/' + perm_path)
+    redirect link, 302
     #302 found
   end
 
