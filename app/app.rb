@@ -6,7 +6,7 @@ require 'lmdb'
 class Tulle < Sinatra::Base
 
   @@SHORTENER_SCHEME = 'http://'
-  @@SHORTENER_HOST = '45.33.71.165'  #'library.temple.edu/'  #'127.0.0.1:9393/'
+  @@SHORTENER_HOST = '45.33.71.165/'  #'library.temple.edu/'  #'127.0.0.1:9393/'
   @@SHORTENER_PATH = 'r/'
   @@SHORTENER_ERR_ROUTE = 'err/'
 
