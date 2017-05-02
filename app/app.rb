@@ -48,6 +48,10 @@ class Tulle < Sinatra::Base
 
   configure do  #  or def initialize ()
     #super()
+    file = File.new("#{settings.root}/log/#{settings.environment}.log", 'a+')
+    file.sync = true
+    use Rack::CommonLogger, file
+        
     @@db_alma = @@env.database('alma_db', create: true)
     @@db_blacklight = @@env.database('blacklight_db', create: true)
     @@db_customurls = @@env.database('custom_urls', create: true)
