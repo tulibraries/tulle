@@ -6,7 +6,7 @@ require 'lmdb'
 class Tulle < Sinatra::Base
 
   @@SHORTENER_SCHEME = 'http://'
-  @@SHORTENER_HOST = 'library.temple.edu'  #'127.0.0.1:9393/'  '45.33.71.165' 
+  @@SHORTENER_HOST = 'library.temple.edu'  #'127.0.0.1:9393/'  '45.33.71.165'
   @@SHORTENER_PATH = 'r'
   @@SHORTENER_ERR_ROUTE = 'err'
 
@@ -117,7 +117,10 @@ class Tulle < Sinatra::Base
   get '/' + @@SHORTENER_PATH + '*' do
     link = ''
     begin
+      print "new shorturl request:"
+      print params
     	linkid = params[:captures][0]
+      print linkid
 
       if linkid.length == @@cust_hash_length
         link = @@db_customurls[linkid]
