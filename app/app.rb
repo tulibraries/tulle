@@ -9,6 +9,7 @@ class Tulle < Sinatra::Base
   @@SHORTENER_HOST = 'library.temple.edu'  #'127.0.0.1:9393/'  '45.33.71.165'
   @@SHORTENER_PATH = 'r'
   @@SHORTENER_ERR_ROUTE = 'err'
+  @@SHORTENER_STATS_ROUTE = 'stats'
 
   #http://diamond.temple.edu/record=b6296088~S30
   @@DIAMOND_SCHEME = 'http://'
@@ -46,8 +47,7 @@ class Tulle < Sinatra::Base
   @@cust_hash_length = 6
   @@hash_base = 36
 
-  configure do  #  or def initialize ()
-    #super()
+  configure do  #  or def initialize () #super()
     enable :logging
     file = File.new("#{settings.root}/log/#{settings.environment}.log", 'a+')
     file.sync = true
@@ -59,7 +59,7 @@ class Tulle < Sinatra::Base
     @@db_mms2iep = @@env.database('publishing', create: true)
     @@db_diamond = @@env.database('diamond_db', create: true)
 
-    @application_url = uri = URI::HTTP.build(:host => @@SHORTENER_HOST)
+    @application_url = URI::HTTP.build(:host => @@SHORTENER_HOST)
 
     #puts  @db_mms2iep.stat[:entries]
 
@@ -111,6 +111,26 @@ class Tulle < Sinatra::Base
       return found
     end
 
+    def dump_db( db )
+      db_array = {}
+      db.cursor do |c|
+        c.first
+        loop do
+          key, value = c.get
+          #puts key + " " + value
+          db_array[key] = value
+          break if !c.next
+        end
+      end
+      return db_array
+    end
+
+  end
+
+
+  get '/' + @@SHORTENER_STATS_ROUTE do
+    @stats = dump_db( @@db_diamond )
+    erb :stats
   end
 
 
@@ -118,6 +138,8 @@ class Tulle < Sinatra::Base
     erb :error
   end
 
+
+# request.url  # => 'http://example.com/hello-world?foo=bar'
   # route for short url
   get '/' + @@SHORTENER_PATH + '/' + '*' do
     link = ''
