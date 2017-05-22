@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stats</title>
+    <style>
+    </style>
+</head>
+<body>
+    <div class="container">
+      <% @stats.each do |key,value| %>
+          <h2><%= key %> = <%= value %></h2>
+      <% end %>
+    </div>
+  </body>
+</html>
