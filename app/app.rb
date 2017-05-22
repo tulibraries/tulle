@@ -127,10 +127,6 @@ class Tulle < Sinatra::Base
 
   end
 
-  get %r{.*/diamond_sunset.png} do
-    redirect('public/diamond_sunset.png')
-  end
-
 
   get '/' + @@SHORTENER_STATS_ROUTE do
     @stats = dump_db( @@db_diamond )
