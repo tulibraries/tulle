@@ -127,7 +127,7 @@ class Tulle < Sinatra::Base
 
   end
 
-  get %r{.*/css/diamond_sunset.png} do
+  get %r{.*/diamond_sunset.png} do
     redirect('public/diamond_sunset.png')
   end
 
