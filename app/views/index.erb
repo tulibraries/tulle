@@ -10,7 +10,7 @@
     margin: auto;
     width: 50%;
     height: 250px;
-    background: url('/diamond_sunset.png');
+    background: url('diamond_sunset.png');
     background-size: auto;
     background-position: center;
     background-repeat: no-repeat;
@@ -47,20 +47,21 @@
 </head>
 <body>
   <div class="container">
+    <!-- <img src="diamond_sunset.png"> -->
     <h1><center><a href="<%= @application_url %>">TUL Link Exchanger</a></center></h1>
   </div>
     <div class="internal">
       <p>
-      Exchange vendor links for permanent Temple URLs:
+      Exchange Diamond <!-- Diamond/Primo --> links for permanent Temple URLs:
     </p>
     </div>
     <div class="internal">
-      <p>
         <form method="post">
+          <label>URL</label>
           <input type="text" value="<%= h(params[:url]) %>" name="url" id="url" />
           <input type="submit" value="Exchange" id="submit" />
         </form>
-      </p>
+        <p></p>
     <div class="clear"></div>
     <% if not @shortened_url.nil? %>
     <div class="result">
@@ -98,31 +99,31 @@
     <h3>
       Instructions:
     </h3>
-    <ul>
+    <ol>
       <li>
         Get the Diamond “permanent link”:
-      </li>
-      <li>
-        Navigate to individual Diamond record
-      </li>
-      <li>
-        Click on “Permanent link” icon (left of location information).
-      </li>
+        <ol style="list-style-type: lower-alpha;">
+          <li>
+            Navigate to individual Diamond record
+          </li>
+          <li>
+            Click on “Permanent link” icon (left of location information).
+          </li>
+        </ol>
       <li>
         Copy URL from main browser bar.
+      </li>
       </li>
       <li>
         Paste into TUL Link Exchanger bar and hit “Enter.”
       </li>
-    </ul>
+    </ol>
 
     <h3>
      The TUL Link Exchanger will not work with following URL types:
     </h3>
     <div class="break">
       <ul>
-
-      </li>
       <li>
         Non-Diamond URLs
       </li>
@@ -134,5 +135,9 @@
   </div>
   <h3>Please note that the original Diamond permanent links will also automatically redirect to Primo on June 29th.</h3>
 </div>
+</div>
+<div class="internal">
+  <p></p>
+  <img src="diamond_sunset.png">
 </div>
 </body>

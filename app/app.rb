@@ -53,6 +53,8 @@ class Tulle < Sinatra::Base
     file.sync = true
     use Rack::CommonLogger, file
 
+    # set :public_folder, 'public'
+
     @@db_alma = @@env.database('alma_db', create: true)
     @@db_blacklight = @@env.database('blacklight_db', create: true)
     @@db_customurls = @@env.database('custom_urls', create: true)
@@ -127,9 +129,9 @@ class Tulle < Sinatra::Base
 
   end
 
-  get %r{.*/diamond_sunset.png} do
-    redirect('/public/diamond_sunset.png')
-  end
+  # get %r{.*/diamond_sunset.png} do
+  #   redirect('/public/diamond_sunset.png')
+  # end
 
   get '/' + @@SHORTENER_STATS_ROUTE do
     @stats = dump_db( @@db_diamond )
