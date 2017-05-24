@@ -47,13 +47,25 @@ class Tulle < Sinatra::Base
   @@cust_hash_length = 6
   @@hash_base = 36
 
+  set :logging, true
+  logfilename = "#{settings.root}/log/#{settings.environment}.log"
+  $logger = ::Logger.new(logfilename)
+  # @@logger.sync = true
+
+  before {
+    $logger.level = Logger::DEBUG
+    env["rack.logger"] = $logger
+    env["rack.errors"] =  $logger
+  }
+
   configure do  #  or def initialize () #super()
     enable :logging
-    file = File.new("#{settings.root}/log/#{settings.environment}.log", 'a+')
-    file.sync = true
-    use Rack::CommonLogger, file
+    print "Logging to " + logfilename + "\n"
 
-    # set :public_folder, 'public'
+    Sinatra::Base.use Rack::CommonLogger, $logger
+
+    #set :public_folder, '/public'
+    #set :static, true
 
     @@db_alma = @@env.database('alma_db', create: true)
     @@db_blacklight = @@env.database('blacklight_db', create: true)
@@ -149,10 +161,10 @@ class Tulle < Sinatra::Base
   get '/' + @@SHORTENER_PATH + '/' + '*' do
     link = ''
     begin
-      print "new shorturl request:"
-      print params
+      logger.info  "new shorturl request:"
+      logger.info  params
     	linkid = params[:captures][0]
-      print linkid
+      logger.info  linkid
 
       if linkid.length == @@cust_hash_length
         link = @@db_customurls[linkid]
@@ -162,9 +174,9 @@ class Tulle < Sinatra::Base
       else
       end
     rescue Exception => e
-      print "shorturl generation error"
-      print e.message
-      print e.backtrace.inspect
+      logger.info  "shorturl generation error"
+      logger.info  e.message
+      logger.info  e.backtrace.inspect
       link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_ERR_ROUTE)
     end
   	redirect link, 301
@@ -177,6 +189,8 @@ class Tulle < Sinatra::Base
 
   # else this is a straight redirect
   get '/*' do
+    logger.info  "new shorturl redirect:"
+    logger.info  params
     path = params[:splat][0]
     perm_path = get_perm_path( path )
     link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_PATH + '/' + perm_path)
@@ -186,12 +200,16 @@ class Tulle < Sinatra::Base
 
 
   post '/' do
+    logger.info  "new shorturl post:"
+    logger.info  params
     if !params[:url].nil? and !params[:url].empty?
       #TODO Enfore valid URI
       shortcode = ''
       item_id = ''
       @input_url = params[:url]
       uri = URI(@input_url)
+
+      logger.info uri
 
       if !uri.scheme #forgot the http:// ? let's help 'em out
         @input_url = @@DIAMOND_SCHEME + @input_url
