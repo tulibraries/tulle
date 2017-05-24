@@ -164,7 +164,7 @@ class Tulle < Sinatra::Base
       logger.info  "new shorturl request:"
       logger.info  params
     	linkid = params[:captures][0]
-      logger.info  linkid
+      logger.info  "linkid: " + linkid
 
       if linkid.length == @@cust_hash_length
         link = @@db_customurls[linkid]
@@ -172,7 +172,9 @@ class Tulle < Sinatra::Base
         diamond_id = @@db_diamond[linkid]
         link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_AFFIX)
       else
+        logger.info  "error linkid.length: " + linkid.length
       end
+      logger.info  "retrieved link: " + link
     rescue Exception => e
       logger.info  "shorturl lookup/redirect error"
       logger.info  e.message
