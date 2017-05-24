@@ -174,7 +174,7 @@ class Tulle < Sinatra::Base
       else
       end
     rescue Exception => e
-      logger.info  "shorturl generation error"
+      logger.info  "shorturl lookup/redirect error"
       logger.info  e.message
       logger.info  e.backtrace.inspect
       link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_ERR_ROUTE)
@@ -201,8 +201,9 @@ class Tulle < Sinatra::Base
 
   post '/' do
     logger.info  "new shorturl post:"
-    logger.info  params
     if !params[:url].nil? and !params[:url].empty?
+      logger.info  params
+
       #TODO Enfore valid URI
       shortcode = ''
       item_id = ''
@@ -216,21 +217,36 @@ class Tulle < Sinatra::Base
         uri = URI(@input_url)
       end
 
-      if uri.host == "diamond.temple.edu"
-        path_tokens = uri.path.split(/[=,~]/)
-        item_id = path_tokens[1]
-        shortcode = url_hash( item_id )
-        @@db_diamond[shortcode] = item_id
-      else #arbitrary links allowed?
-        # shortcode = url_hash
-        # item_id = @input_url
-        # @@db_customurls[shortcode] = item_id
+      begin
+        if uri.host == "diamond.temple.edu"
+          path_tokens = uri.path.split(/[=,~]/)
+          logger.info "path tokens: " + path_tokens.to_s
+          if path_tokens.length > 2
+            item_id = path_tokens[1]
+            if !item_id.nil? and !item_id.empty?
+              logger.info "item id: " + item_id.to_s
+              shortcode = url_hash( item_id )
+              @@db_diamond[shortcode] = item_id
+            end
+          end
+        end
+        if shortcode.empty?
+          #arbitrary links allowed?
+          # shortcode = url_hash
+          # item_id = @input_url
+          # @@db_customurls[shortcode] = item_id
+          logger.info "shorturl post got invalid link"
+          link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_ERR_ROUTE)
+          redirect link
+        else
+          @shortened_url = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_PATH + '/' + shortcode)
+        end
+      rescue Exception => e
+        logger.info  "shorturl post/generation error"
+        logger.info  e.message
+        logger.info  e.backtrace.inspect
         link = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_ERR_ROUTE)
-        redirect link
       end
-
-      @shortened_url = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_PATH + '/' + shortcode)
-
     end
     erb :index
   end
