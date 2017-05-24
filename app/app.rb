@@ -174,7 +174,7 @@ class Tulle < Sinatra::Base
       else
         logger.info  "error linkid.length: " + linkid.length
       end
-      logger.info  "retrieved link: " + link
+      logger.info  "retrieved link: " + link.to_s
     rescue Exception => e
       logger.info  "shorturl lookup/redirect error"
       logger.info  e.message
