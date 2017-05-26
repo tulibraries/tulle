@@ -223,7 +223,7 @@ class Tulle < Sinatra::Base
         if uri.host == "diamond.temple.edu"
           path_tokens = uri.path.split(/[=,~]/)
           logger.info "path tokens: " + path_tokens.to_s
-          if path_tokens.length > 2
+          if path_tokens.length >= 2
             item_id = path_tokens[1]
             if !item_id.nil? and !item_id.empty?
               logger.info "item id: " + item_id.to_s
