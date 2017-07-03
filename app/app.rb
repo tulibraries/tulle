@@ -86,7 +86,10 @@ class Tulle < Sinatra::Base
     #puts  @db_mms2iep.stat[:entries]
 
     if File.exist? "PID and MMS ID.csv"
-      if( @@db_primo.stat[:entries] <= 1 )
+      puts @@db_primo.stat[:entries]
+      csvsize =  IO.readlines('PID and MMS ID.csv').size
+      puts csvsize
+      if( @@db_primo.stat[:entries] < 2000000 )
         puts "Beginning primo IDs ingest " + Time.now.to_s
         CSV.foreach("PID and MMS ID.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           mms, iep = row
@@ -97,7 +100,10 @@ class Tulle < Sinatra::Base
     end
 
     if File.exist? "01tuli_inst_BIB_IDs.csv"
-      if( @@db_alma.stat[:entries] <= 1 )
+      puts @@db_alma.stat[:entries]
+      csvsize = IO.readlines('01tuli_inst_BIB_IDs.csv').size
+      puts csvsize
+      if( @@db_alma.stat[:entries] < 2000000 )
         puts "Beginning alma IDs ingest " + Time.now.to_s
         CSV.foreach("01tuli_inst_BIB_IDs.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           mms, diamond = row
