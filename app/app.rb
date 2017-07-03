@@ -88,7 +88,7 @@ class Tulle < Sinatra::Base
     if File.exist? "PID and MMS ID.csv"
       if( @@db_primo.stat[:entries] <= 1 )
         puts "Beginning primo IDs ingest " + Time.now.to_s
-        CSV.foreach("PID and MMS ID.csv", :headers => false, :encoding => config['encoding']) do |row|   # :converters => :integer
+        CSV.foreach("PID and MMS ID.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           mms, iep = row
           @@db_primo[mms.to_s] = iep.to_s
         end
@@ -99,7 +99,7 @@ class Tulle < Sinatra::Base
     if File.exist? "01tuli_inst_BIB_IDs.csv"
       if( @@db_alma.stat[:entries] <= 1 )
         puts "Beginning alma IDs ingest " + Time.now.to_s
-        CSV.foreach("01tuli_inst_BIB_IDs.csv", :headers => false, :encoding => config['encoding']) do |row|   # :converters => :integer
+        CSV.foreach("01tuli_inst_BIB_IDs.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           mms, diamond = row
           @@db_alma[diamond.to_s[0..7]] = mms.to_s
         end
