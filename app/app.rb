@@ -178,7 +178,7 @@ class Tulle < Sinatra::Base
     end
 
     def get_err_link()
-      link = @@SHORTENER_ERR_ROUTE
+      link = @application_url.to_s + '/' + @@SHORTENER_ERR_ROUTE
       return link
     end
 
@@ -221,7 +221,13 @@ class Tulle < Sinatra::Base
   end
 
 
-  get '/' + '*' + @@SHORTENER_ERR_ROUTE do
+  get '/' + '*' + '/' + @@SHORTENER_ERR_ROUTE do
+    logmsg = "new shorturl error request "
+    erb :error
+  end
+
+  get '/' + @@SHORTENER_ERR_ROUTE do
+    logmsg = "new shorturl error request "
     erb :error
   end
 
@@ -237,9 +243,9 @@ class Tulle < Sinatra::Base
       if linkid.length == @@diamond_hash_length || linkid.length == @@primo_hash_length
         link = get_perm_path( @@db_shorturls[linkid] )
       else
-        logmsg +=   " error linkid.length: " + linkid.length
+        logmsg += " error linkid.length: " + linkid.length
       end
-      logmsg +=   " retrieved link: " + link.to_s
+      logmsg += " retrieved link: " + link.to_s
     rescue Exception => e
       logmsg += " shorturl lookup/redirect error " +  e.message +  e.backtrace.inspect
       link = get_err_link()
@@ -265,7 +271,7 @@ class Tulle < Sinatra::Base
       logger.info logmsg
       redirect link, 301
     rescue Exception => e
-      logmsg +=  " shorturl patroninfo error"
+      logmsg +=  " shorturl patroninfo error "
       logmsg +=  e.message
       logmsg +=  e.backtrace.inspect
       logger.info logmsg
@@ -275,27 +281,30 @@ class Tulle < Sinatra::Base
   end
 
   get '/' + @@DIAMOND_PATH + '*' do
+    logmsg = ''
     begin
-      logger.info "new shorturl redirect:"
-      logger.info params
-      logger.info "referrer: " + request.referrer.to_s
+      logmsg +=  "new shorturl redirect: "
+      logmsg +=  params
+      logmsg +=  " referrer: " + request.referrer.to_s
       if params[:captures].is_a? String
         linkid = params[:captures]
       else
         linkid = params[:captures][0]
       end
       linkid = linkid[0..7]
-      logger.info linkid
+      logmsg += linkid.to_s
       link = get_perm_path( linkid )
       if link.empty?
 
       end
-      logger.info link
+      logmsg += link.to_s
+      logger.info logmsg
       redirect link, 301
     rescue Exception => e
-      logger.info  "shorturl redirect error"
-      logger.info  e.message
-      logger.info  e.backtrace.inspect
+      logmsg +=  "shorturl redirect error "
+      logmsg +=   e.message
+      logmsg +=   e.backtrace.inspect
+      logger.info logmsg
       link = URI::HTTPS.build(:host => @@SHORTENER_HOST, :path => @@SEARCH_FAQ_PATH)
       redirect link, 302
     end
@@ -303,41 +312,44 @@ class Tulle < Sinatra::Base
 
   # else this is a straight redirect
   get '/*' do
-    logger.info "new faq redirect:"
-    logger.info params
-    logger.info "referrer: " + request.referrer.to_s
+    logmsg = ''
+    logmsg += "new faq redirect: "
+    logmsg += params.to_s
+    logmsg += " referrer: " + request.referrer.to_s
     link = URI::HTTPS.build(:host => @@SHORTENER_HOST, :path => @@SEARCH_FAQ_PATH)
+    logger.info logmsg
     redirect link, 302
     #302 found
   end
 
 
   post '/' do
-    logmsg = ''
-    logmsg += "new shorturl post:"
-    if !params[:url].nil? and !params[:url].empty?
-      logmsg += params.to_s
-      shortcode = ''
-      item_id = ''
-      @input_url = params[:url].strip
-      uri = URI(@input_url)
+    logmsg = "new shorturl post:"
 
-      logmsg += " URI: " + uri.to_s
+    begin
+      if !params[:url].nil? and !params[:url].empty?
+        logmsg += params.to_s
+        shortcode = ''
+        item_id = ''
 
-      if !uri.scheme #forgot the http:// ? let's help 'em out
-        logmsg += " Adding scheme. "
-        @input_url = @@DIAMOND_SCHEME + @input_url
+        @input_url = params[:url].strip
         uri = URI(@input_url)
-      end
 
-      begin
+        logmsg += " URI: " + uri.to_s
+
+        if !uri.scheme #forgot the http:// ? let's help 'em out
+          logmsg += " Adding scheme. "
+          @input_url = @@DIAMOND_SCHEME + @input_url
+          uri = URI(@input_url)
+        end
+
         if uri.host == @@DIAMOND_HOST  #{}"diamond.temple.edu"
           path_tokens = uri.path.split(/[=,~]/)
           logmsg += " Diamond Path tokens: " + path_tokens.to_s
           if path_tokens.length > 2
             item_id = path_tokens[1]
             if !item_id.nil? and !item_id.empty?
-              logmsg += "item id: " + item_id.to_s
+              logmsg += " item id: " + item_id.to_s
               shortcode = url_hash( item_id )
               @@db_shorturls[shortcode] = item_id
             end
@@ -348,7 +360,7 @@ class Tulle < Sinatra::Base
           id = path_tokens["docid"]  #01TULI_ALMA21252407250003811
           if !id.nil? and !id.empty? and (id[0..10] == @@PRIMO_FILTER_PREFIX)
             item_id = id[11..27]
-            logmsg += "item id: " + item_id.to_s
+            logmsg += " item id: " + item_id.to_s
             shortcode = url_hash( item_id )
             @@db_shorturls[shortcode] = item_id
           end
@@ -359,20 +371,22 @@ class Tulle < Sinatra::Base
           # item_id = @input_url
           # @@db_customurls[shortcode] = item_id
           logmsg += " shorturl post got invalid link"
-          logger.info logmsg
           link = get_err_link()
+          logmsg += link.to_s
+          logger.info logmsg
           redirect link
         else
           @shortened_url = URI::HTTP.build(:host => @@SHORTENER_HOST, :path => '/' + @@SHORTENER_PATH + '/' + shortcode)
         end
-      rescue Exception => e
-        logmsg += " shorturl post/generation error: "
-        logmsg += e.message
-        logmsg += e.backtrace.inspect
-        link = get_err_link()
-        logger.info logmsg
-        redirect link
       end
+    rescue Exception => e
+      logmsg += " shorturl post/generation error: "
+      logmsg += e.message.to_s
+      logmsg += e.backtrace.inspect.to_s
+      link = get_err_link()
+      logmsg += " link: " + link.to_s
+      logger.info logmsg
+      redirect link
     end
     logger.info logmsg
     erb :index
