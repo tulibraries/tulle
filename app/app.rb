@@ -283,9 +283,9 @@ class Tulle < Sinatra::Base
   get '/' + @@DIAMOND_PATH + '*' do
     logmsg = ''
     begin
-      logmsg +=  "new shorturl redirect: "
-      logmsg +=  params
-      logmsg +=  " referrer: " + request.referrer.to_s
+      logmsg += "new shorturl redirect: "
+      logmsg += params.to_s
+      logmsg += " referrer: " + request.referrer.to_s
       if params[:captures].is_a? String
         linkid = params[:captures]
       else
