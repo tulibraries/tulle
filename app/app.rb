@@ -158,13 +158,13 @@ class Tulle < Sinatra::Base
 
     def get_perm_path( id )
       #link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_AFFIX
+      perm_url = ''
       if id[0] == 'b'
         #puts "get_perm_path id: " + id
         almaid = @@db_alma[id]
         #puts "get_perm_path almaid: " + almaid
         primoid = @@db_primo[almaid].to_s
         #puts "get_perm_path primoid: " + primoid
-        perm_url = ''
       else
         primoid = id
       end
@@ -295,9 +295,10 @@ class Tulle < Sinatra::Base
       logmsg += linkid.to_s
       link = get_perm_path( linkid )
       if link.empty?
-
+        logmsg += " Error looking up id: " + linkid.to_s
+      else
+        logmsg += link.to_s
       end
-      logmsg += link.to_s
       logger.info logmsg
       redirect link, 301
     rescue Exception => e
