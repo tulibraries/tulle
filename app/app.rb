@@ -221,7 +221,7 @@ class Tulle < Sinatra::Base
   end
 
 
-  get '/' + @@SHORTENER_ERR_ROUTE do
+  get '/' + '*' + @@SHORTENER_ERR_ROUTE do
     erb :error
   end
 
