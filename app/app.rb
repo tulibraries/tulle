@@ -247,7 +247,10 @@ class Tulle < Sinatra::Base
       end
       logmsg += " retrieved link: " + link.to_s
     rescue Exception => e
-      logmsg += " shorturl lookup/redirect error " +  e.message +  e.backtrace.inspect
+      logmsg += " shorturl lookup/redirect error "
+      logmsg += e.message.to_s
+      logmsg += e.backtrace.inspect.to_s
+      logger.info logmsg
       link = get_err_link()
     end
     logger.info logmsg
