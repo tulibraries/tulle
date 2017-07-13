@@ -222,12 +222,14 @@ class Tulle < Sinatra::Base
 
 
   get '/' + '*' + '/' + @@SHORTENER_ERR_ROUTE do
-    logmsg = "new shorturl error request "
+    logmsg = "new shorturl error request " + request.referrer.to_s
+    logger.info logmsg
     erb :error
   end
 
   get '/' + @@SHORTENER_ERR_ROUTE do
-    logmsg = "new shorturl error request "
+    logmsg = "new shorturl error request " + request.referrer.to_s
+    logger.info logmsg
     erb :error
   end
 
@@ -237,7 +239,7 @@ class Tulle < Sinatra::Base
     link = ''
     logmsg = ''
     begin
-      logmsg += "new shorturl request: " + params.to_s
+      logmsg += "new shorturl request: "
     	linkid = params[:captures][0]
       logmsg += " linkid: " + linkid.to_s + " referrer: " + request.referrer.to_s
       if linkid.length == @@diamond_hash_length || linkid.length == @@primo_hash_length
