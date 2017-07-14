@@ -170,7 +170,7 @@ class Tulle < Sinatra::Base
       end
       if !primoid.empty?
         primo_query =  + @@PRIMO_ITEM_QUERY + primoid + @@PRIMO_ITEM_AFFIX
-        perm_url = URI::HTTPS.build(:scheme => @@PRIMO_HOSTED_SCHEME, :host => @@PRIMO_HOST, :path => @@PRIMO_ITEM_PATH, :query => primo_query )
+        perm_url = URI::HTTPS.build(:scheme => @@PRIMO_HOSTED_SCHEME, :host => @@PRIMO_HOST, :path => @@PRIMO_ITEM_PATH, :query => primo_query ).to_s
       else
         puts "get_perm_path ERROR: " + almaid.to_s + " not found in primo db"
       end
