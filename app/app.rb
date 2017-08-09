@@ -70,10 +70,14 @@ class Tulle < Sinatra::Base
     $logger.level = Logger::DEBUG
     env["rack.logger"] = $logger
     env["rack.errors"] =  $logger
+
+    @@db_alma = @@env.database('alma_db', create: true)
+    @@db_primo = @@env.database('publishing_db', create: true)
+    @@db_shorturls = @@env.database('diamond_db', create: true)
   }
 
   after {
-    #@@env.close
+    @@env.close
   }
 
   configure do  #  or def initialize () #super()
@@ -84,12 +88,6 @@ class Tulle < Sinatra::Base
 
     #set :public_folder, '/public'
     #set :static, true
-
-    @@db_alma = @@env.database('alma_db', create: true)
-    #@@db_blacklight = @@env.database('blacklight_db', create: true)
-    #@@db_customurls = @@env.database('custom_urls', create: true)
-    @@db_primo = @@env.database('publishing_db', create: true)
-    @@db_shorturls = @@env.database('diamond_db', create: true)
 
     @application_url = URI::HTTP.build(:host => @@SHORTENER_HOST)
 
