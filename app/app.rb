@@ -45,11 +45,11 @@ class Tulle < Sinatra::Base
   @@PRIMO_FILTER_PREFIX = '01TULI_ALMA'
 
 
-  @@db_primo = @@env.database
-  #@@db_customurls = @@env.database
-  @@db_alma = @@env.database
-  #@@db_blacklight = @@env.database
-  @@db_shorturls = @@env.database
+  # @@db_primo = @@env.database
+  # #@@db_customurls = @@env.database
+  # @@db_alma = @@env.database
+  # #@@db_blacklight = @@env.database
+  # @@db_shorturls = @@env.database
 
   @@cust_hash_length = 6
   #864305631152
