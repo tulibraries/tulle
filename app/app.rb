@@ -73,7 +73,7 @@ class Tulle < Sinatra::Base
   }
 
   after {
-    @@env.close
+    #@@env.close
   }
 
   configure do  #  or def initialize () #super()
