@@ -72,6 +72,10 @@ class Tulle < Sinatra::Base
     env["rack.errors"] =  $logger
   }
 
+  after {
+    @@env.close
+  }
+
   configure do  #  or def initialize () #super()
     enable :logging
     print "Logging to " + logfilename + "\n"
@@ -182,19 +186,6 @@ class Tulle < Sinatra::Base
       return link
     end
 
-    def find_value( needle, haystack )
-      found = ''
-      db = haystack
-      db.cursor do |c|
-        key, value = c.next
-        if( value == needle )
-          found = key
-          break
-        end
-      end
-      return found
-    end
-
     def dump_db( db )
       db_array = {}
       db.cursor do |c|
@@ -205,6 +196,7 @@ class Tulle < Sinatra::Base
           db_array[key] = value
           break if !c.next
         end
+        #c.close
       end
       return db_array
     end
@@ -245,7 +237,7 @@ class Tulle < Sinatra::Base
       if linkid.length == @@diamond_hash_length || linkid.length == @@primo_hash_length
         link = get_perm_path( @@db_shorturls[linkid] )
       else
-        logmsg += " error linkid.length: " + linkid.length
+        logmsg += " error linkid.length: " + linkid.length.to_s
       end
       logmsg += " retrieved link: " + link.to_s
     rescue Exception => e
@@ -327,7 +319,7 @@ class Tulle < Sinatra::Base
 
 
   post '/' do
-    logmsg = "new shorturl post:"
+    logmsg = "new shorturl post: "
 
     begin
       if !params[:url].to_s.empty?
