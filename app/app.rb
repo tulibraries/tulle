@@ -45,9 +45,6 @@ class Tulle < Sinatra::Base
   @@PRIMO_FILTER_PREFIX = '01TULI_ALMA'
 
 
-  #one gigarecord ought to be enough for anybody
-  @@env = LMDB.new('./', mapsize: 1_000_000_000)
-
   @@db_primo = @@env.database
   #@@db_customurls = @@env.database
   @@db_alma = @@env.database
@@ -71,6 +68,9 @@ class Tulle < Sinatra::Base
     env["rack.logger"] = $logger
     env["rack.errors"] =  $logger
 
+
+    #one gigarecord ought to be enough for anybody
+    @@env = LMDB.new('./', mapsize: 1_000_000_000)
     @@db_alma = @@env.database('alma_db', create: true)
     @@db_primo = @@env.database('publishing_db', create: true)
     @@db_shorturls = @@env.database('diamond_db', create: true)
