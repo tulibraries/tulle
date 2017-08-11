@@ -44,13 +44,6 @@ class Tulle < Sinatra::Base
 
   @@PRIMO_FILTER_PREFIX = '01TULI_ALMA'
 
-
-  # @@db_primo = @@env.database
-  # #@@db_customurls = @@env.database
-  # @@db_alma = @@env.database
-  # #@@db_blacklight = @@env.database
-  # @@db_shorturls = @@env.database
-
   @@cust_hash_length = 6
   #864305631152
   @@diamond_hash_length = 12
@@ -68,11 +61,11 @@ class Tulle < Sinatra::Base
     env["rack.logger"] = $logger
     env["rack.errors"] =  $logger
 
-
     #one gigarecord ought to be enough for anybody
     @@env = LMDB.new('./', mapsize: 1_000_000_000)
-    @@db_alma = @@env.database('alma_db', create: true)
-    @@db_primo = @@env.database('publishing_db', create: true)
+    @@db_diamond_primo = @@env.database('diamond_primo_db', create: true)
+    # @@db_alma = @@env.database('alma_db', create: true)
+    # @@db_primo = @@env.database('publishing_db', create: true)
     @@db_shorturls = @@env.database('diamond_db', create: true)
   }
 
@@ -92,54 +85,74 @@ class Tulle < Sinatra::Base
     @application_url = URI::HTTP.build(:host => @@SHORTENER_HOST)
 
     #puts  @db_mms2iep.stat[:entries]
+    @@env = LMDB.new('./', mapsize: 1_000_000_000)
+    @@db_diamond_primo = @@env.database('diamond_primo_db', create: true)
+    @@db_shorturls = @@env.database('diamond_db', create: true)
 
-    if File.exist? "PID and MMS ID.csv"
-      puts @@db_primo.stat[:entries]
-      csvsize =  IO.readlines('PID and MMS ID.csv').size
-      puts csvsize
-      if( @@db_primo.stat[:entries] < 2000000 )
-        puts "Beginning primo IDs ingest " + Time.now.to_s
-        CSV.foreach("PID and MMS ID.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
-          mms, iep = row
-          @@db_primo[mms.to_s] = iep.to_s
+    diamondprimofile = "01tuli_inst_ds.csv"
+    if File.exist? diamondprimofile
+      puts "Diamond-Primo db size: " + @@db_diamond_primo.stat[:entries].to_s
+      csvsize =  IO.readlines(diamondprimofile).size
+      puts  "Diamond-Primo file size: " + csvsize.to_s
+      if( @@db_diamond_primo.stat[:entries] <= 1 )
+        puts "Beginning primo-diamond IDs ingest " + Time.now.to_s
+        CSV.foreach(diamondprimofile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
+          iep, diamond = row
+          @@db_diamond_primo[diamond.to_s[0..7]] = iep.to_s
         end
-        puts "Done primo IDs ingest " + Time.now.to_s
+        File.delete(diamondprimofile)
+        puts "Done primo-diamond IDs ingest " + Time.now.to_s
       end
     end
 
-    if File.exist? "01tuli_inst_BIB_IDs.csv"
-      puts @@db_alma.stat[:entries]
-      csvsize = IO.readlines('01tuli_inst_BIB_IDs.csv').size
-      puts csvsize
-      if( @@db_alma.stat[:entries] < 2000000 )
-        puts "Beginning alma IDs ingest " + Time.now.to_s
-        CSV.foreach("01tuli_inst_BIB_IDs.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
-          mms, diamond = row
-          @@db_alma[diamond.to_s[0..7]] = mms.to_s
-        end
-        puts "Done alma IDs ingest " + Time.now.to_s
-      end
-    end
+    # if File.exist? "PID and MMS ID.csv"
+    #   puts @@db_primo.stat[:entries]
+    #   csvsize =  IO.readlines('PID and MMS ID.csv').size
+    #   puts csvsize
+    #   if( @@db_primo.stat[:entries] < 2000000 )
+    #     puts "Beginning primo IDs ingest " + Time.now.to_s
+    #     CSV.foreach("PID and MMS ID.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
+    #       mms, iep = row
+    #       @@db_primo[mms.to_s] = iep.to_s
+    #     end
+    #     puts "Done primo IDs ingest " + Time.now.to_s
+    #   end
+    # end
+    #
+    # if File.exist? "01tuli_inst_BIB_IDs.csv"
+    #   puts @@db_alma.stat[:entries]
+    #   csvsize = IO.readlines('01tuli_inst_BIB_IDs.csv').size
+    #   puts csvsize
+    #   if( @@db_alma.stat[:entries] < 2000000 )
+    #     puts "Beginning alma IDs ingest " + Time.now.to_s
+    #     CSV.foreach("01tuli_inst_BIB_IDs.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
+    #       mms, diamond = row
+    #       @@db_alma[diamond.to_s[0..7]] = mms.to_s
+    #     end
+    #     puts "Done alma IDs ingest " + Time.now.to_s
+    #   end
+    # end
 
-    if File.exist? "manual-diamond-mappings-2.csv"
-      puts @@db_alma.stat[:entries]
-      csvsize = IO.readlines("manual-diamond-mappings-2.csv").size
+    augmentfile = "Diamond-Primo-manual-updated.csv"
+    if File.exist? augmentfile
+      puts @@db_diamond_primo.stat[:entries]
+      csvsize = IO.readlines(augmentfile).size
       puts csvsize
       begin
         puts "Beginning manual IDs ingest " + Time.now.to_s
-        CSV.foreach("manual-diamond-mappings-2.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
+        CSV.foreach(augmentfile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           mms, diamond = row
-          @@db_alma[diamond.to_s[0..7]] = mms.to_s
+          @@db_diamond_primo[diamond.to_s[0..7]] = mms.to_s
         end
         puts "Done manual IDs ingest " + Time.now.to_s
-        File.delete("manual-diamond-mappings-2.csv")
+        File.delete(augmentfile)
       rescue Exception => e
         puts e.message
         puts e.backtrace.inspect
       end
     end
-
   end
+
 
   helpers do
     include Rack::Utils
@@ -163,10 +176,11 @@ class Tulle < Sinatra::Base
       perm_url = ''
       primoid = ''
       if id[0] == 'b' # this is a diamond id
-        almaid = @@db_alma[id]
-        if !almaid.to_s.empty?
-          primoid = @@db_primo[almaid].to_s
-        end
+        primoid = @@db_diamond_primo[id]
+        # almaid = @@db_alma[id]
+        # if !almaid.to_s.empty?
+        #   primoid = @@db_primo[almaid].to_s
+        # end
       else  #this is a primo id
         primoid = id.to_s
       end
