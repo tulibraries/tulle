@@ -94,7 +94,7 @@ class Tulle < Sinatra::Base
       puts "Diamond-Primo db size: " + @@db_diamond_primo.stat[:entries].to_s
       csvsize =  IO.readlines(diamondprimofile).size
       puts  "Diamond-Primo file size: " + csvsize.to_s
-      if( @@db_diamond_primo.stat[:entries] <= 1 )
+      if( @@db_diamond_primo.stat[:entries] <= 2000000 )
         puts "Beginning primo-diamond IDs ingest " + Time.now.to_s
         CSV.foreach(diamondprimofile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           iep, diamond = row
