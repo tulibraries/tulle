@@ -141,7 +141,7 @@ class Tulle < Sinatra::Base
       begin
         puts "Beginning manual IDs ingest " + Time.now.to_s
         CSV.foreach(augmentfile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
-          mms, diamond = row
+          diamond, mms = row
           @@db_diamond_primo[diamond.to_s[0..7]] = mms.to_s
         end
         puts "Done manual IDs ingest " + Time.now.to_s
