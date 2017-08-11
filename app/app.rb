@@ -188,7 +188,7 @@ class Tulle < Sinatra::Base
         primo_query = @@PRIMO_ITEM_QUERY + primoid + @@PRIMO_ITEM_AFFIX
         perm_url = URI::HTTPS.build(:scheme => @@PRIMO_HOSTED_SCHEME, :host => @@PRIMO_HOST, :path => @@PRIMO_ITEM_PATH, :query => primo_query).to_s
       else
-        puts "get_perm_path ERROR: " + almaid.to_s + " not found in primo db"
+        puts "get_perm_path ERROR: " + id.to_s + " not found in db"
       end
       return perm_url
     end
