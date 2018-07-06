@@ -26,15 +26,15 @@ class Tulle < Sinatra::Base
   @@PRIMO_ITEM_AFFIX = '&context=L&vid=TULI&search_scope=default_scope&tab=default_tab&lang=en_US'
 
   @@PRIMO_ACCOUNT_PATH = '/primo-explore/account'
-  @@PRIME_ACCOUNT_QUERY = 'vid=TULI&lang=en_US&section=overview'
+  @@PRIMO_ACCOUNT_QUERY = 'vid=TULI&lang=en_US&section=overview'
 
   @@SEARCH_FAQ_PATH = '/library-search-faq'
 
-  #http://libqa.library.temple.edu/catalog/991011767249703811
-  # @@TARGET_SCHEME = 'http://'
-  # @@TARGET_HOST = 'libqa.library.temple.edu/'
-  # @@TARGET_PATH = 'catalog/'
-  # @@TARGET_QUERY = ''
+  #http://libqa.library.temple.edu/catalog/catalog/991011767249703811
+  @@BL_SCHEME = 'https://'
+  @@BL_HOST = 'libqa.library.temple.edu/'
+  @@BL_PATH = 'catalog/catalog/'
+
 
   # search~thoughtz
   # http://exl-impl-primo.hosted.exlibrisgroup.com/primo-explore/search?query=any,contains,otters&vid=01TULI
@@ -48,7 +48,11 @@ class Tulle < Sinatra::Base
   #864305631152
   @@diamond_hash_length = 12
   #16151540936649808398486373
+  #16144537081828078306495333
   @@primo_hash_length = 26
+  #2650455608142374095187122021
+  #2650455223671232256193288037
+  @@alma_hash_length = 28
   @@hash_base = 36
 
   set :logging, true
@@ -64,7 +68,7 @@ class Tulle < Sinatra::Base
     #one gigarecord ought to be enough for anybody
     @@env = LMDB.new('./', mapsize: 1_000_000_000)
     @@db_diamond_primo = @@env.database('diamond_primo_db', create: true)
-    # @@db_alma = @@env.database('alma_db', create: true)
+    @@db_alma = @@env.database('alma_db', create: true)
     # @@db_primo = @@env.database('publishing_db', create: true)
     @@db_shorturls = @@env.database('diamond_db', create: true)
   }
@@ -105,6 +109,22 @@ class Tulle < Sinatra::Base
       end
     end
 
+    # Primo to Diamond reverse lookup for Blacklight catalog
+    if File.exist? "PID and MMS ID.csv"
+      puts @@db_alma.stat[:entries]
+      csvsize =  IO.readlines('PID and MMS ID.csv').size
+      puts csvsize
+      if( @@db_alma.stat[:entries] < 2000000 )
+        puts "Beginning Alma IDs ingest " + Time.now.to_s
+        CSV.foreach("PID and MMS ID.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
+          mms, iep = row
+          @@db_alma[iep.to_s] = mms.to_s
+        end
+        puts "Done Alma IDs ingest " + Time.now.to_s
+      end
+    end
+
+    # Diamond to Primo lookup
     # if File.exist? "PID and MMS ID.csv"
     #   puts @@db_primo.stat[:entries]
     #   csvsize =  IO.readlines('PID and MMS ID.csv').size
@@ -160,32 +180,34 @@ class Tulle < Sinatra::Base
 
     def url_hash( url_id = '' )
       #TODO ensure no collisions?
-      haststr = ''
+      hashstr = ''
       if !url_id.to_s.empty?
-        haststr = url_id.to_i(@@hash_base).to_s
+        hashstr = url_id.to_i(@@hash_base).to_s
       else
         rand_space = @@hash_base**@@cust_hash_length
         hashint = rand(rand_space)
-        haststr = hashint.to_s(@@hash_base)
+        hashstr = hashint.to_s(@@hash_base)
       end
-      return haststr
+      return hashstr
     end
 
     def get_perm_path( id )
       #link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_AFFIX
       perm_url = ''
-      primoid = ''
+      url_id = ''
       if id[0] == 'b' # this is a diamond id
-        primoid = @@db_diamond_primo[id]
+        url_id = @@db_diamond_primo[id]
         # almaid = @@db_alma[id]
         # if !almaid.to_s.empty?
         #   primoid = @@db_primo[almaid].to_s
         # end
-      else  #this is a primo id
-        primoid = id.to_s
+      elsif id.to_s.size == 17 #this is a primo id
+        url_id = id.to_s
+      elsif id.to_s.size == 18 #this is an alma id
+        url_id = id.to_s
       end
-      if !primoid.to_s.empty?
-        primo_query = @@PRIMO_ITEM_QUERY + primoid + @@PRIMO_ITEM_AFFIX
+      if !url_id.to_s.empty?
+        primo_query = @@PRIMO_ITEM_QUERY + url_id + @@PRIMO_ITEM_AFFIX
         perm_url = URI::HTTPS.build(:scheme => @@PRIMO_HOSTED_SCHEME, :host => @@PRIMO_HOST, :path => @@PRIMO_ITEM_PATH, :query => primo_query).to_s
       else
         puts "get_perm_path ERROR: " + id.to_s + " not found in db"
@@ -246,7 +268,7 @@ class Tulle < Sinatra::Base
       logmsg += "new shorturl request: "
     	linkid = params[:captures][0]
       logmsg += " linkid: " + linkid.to_s + " referrer: " + request.referrer.to_s
-      if linkid.length == @@diamond_hash_length || linkid.length == @@primo_hash_length
+      if linkid.length == @@diamond_hash_length || linkid.length == @@primo_hash_length || linkid.length == @@alma_hash_length
         link = get_perm_path( @@db_shorturls[linkid] )
       else
         logmsg += " error linkid.length: " + linkid.length.to_s
@@ -275,7 +297,7 @@ class Tulle < Sinatra::Base
     begin
       logmsg += "new shorturl patroninfo redirect: " + params.to_s
       logmsg += " referrer: " + request.referrer.to_s
-      link = URI::HTTPS.build(:host => @@PRIMO_HOST, :path => @@PRIMO_ACCOUNT_PATH, :query => @@PRIME_ACCOUNT_QUERY)
+      link = URI::HTTPS.build(:host => @@PRIMO_HOST, :path => @@PRIMO_ACCOUNT_PATH, :query => @@PRIMO_ACCOUNT_QUERY)
       logger.info logmsg
       redirect link, 301
       #301 moved permanently
@@ -370,6 +392,17 @@ class Tulle < Sinatra::Base
             logmsg += " item id: " + item_id.to_s
             shortcode = url_hash( item_id )
             @@db_shorturls[shortcode] = item_id
+          end
+        elsif uri.host == @@BL_HOST
+          path_tokens = uri.path.split('/')
+          logmsg += " Blacklight Path tokens: " + path_tokens.to_s
+          if path_tokens.length > 2
+            item_id = path_tokens.last
+            if !item_id.to_s.empty?
+              logmsg += " item id: " + item_id.to_s
+              shortcode = url_hash( item_id )
+              @@db_shorturls[shortcode] = item_id
+            end
           end
         end
         if shortcode.to_s.empty?
