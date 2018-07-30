@@ -63,7 +63,7 @@ class Tulle < Sinatra::Base
   before {
     $logger.level = Logger::DEBUG
     env["rack.logger"] = $logger
-    env["rack.errors"] =  $logger
+    env["rack.errors"] = $logger
 
     #one gigarecord ought to be enough for anybody
     @@env = LMDB.new('./', mapsize: 1_000_000_000)
@@ -109,22 +109,55 @@ class Tulle < Sinatra::Base
       end
     end
 
-    # Primo to Diamond reverse lookup for Blacklight catalog
-    if File.exist? "PID and MMS ID.csv"
+    # Primo to Diamond reverse lookup for Blacklight catalog imports begin here
+    pidandmmsidcsvfile = "PID and MMS ID.csv"
+    if File.exist? pidandmmsidcsvfile
       puts @@db_alma.stat[:entries]
-      csvsize =  IO.readlines('PID and MMS ID.csv').size
+      csvsize =  IO.readlines(pidandmmsidcsvfile).size
       puts csvsize
-      if( @@db_alma.stat[:entries] < 2000000 )
-        puts "Beginning Alma IDs ingest " + Time.now.to_s
-        CSV.foreach("PID and MMS ID.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
+      # if( @@db_alma.stat[:entries] < 2000000 )
+        puts "Beginning pidandmmsidcsvfile IDs ingest " + Time.now.to_s
+        CSV.foreach(pidandmmsidcsvfile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           mms, iep = row
           @@db_alma[iep.to_s] = mms.to_s
         end
-        puts "Done Alma IDs ingest " + Time.now.to_s
-      end
+        File.delete(pidandmmsidcsvfile)
+        puts "Done pidandmmsidcsvfile IDs ingest " + Time.now.to_s
+      # end
     end
 
-    # Diamond to Primo lookup
+    almapublishingidelectronicfull = "alma-publishing-id-electronic-full.csv"
+    if File.exist? almapublishingidelectronicfull
+      puts @@db_alma.stat[:entries]
+      csvsize =  IO.readlines(almapublishingidelectronicfull).size
+      puts csvsize
+      # if( @@db_alma.stat[:entries] < 2000000 )
+        puts "Beginning almapublishingidelectronicfull IDs ingest " + Time.now.to_s
+        CSV.foreach(almapublishingidelectronicfull, :headers => true, :encoding => 'utf-8') do |row|   # :converters => :integer
+          mms, iep = row
+          @@db_alma[iep.to_s] = mms.to_s
+        end
+        File.delete(almapublishingidelectronicfull)
+        puts "Done almapublishingidelectronicfull IDs ingest " + Time.now.to_s
+      # end
+    end
+
+    almapublishingidphysicalpostmigration = "alma-publishing-id-physical-post-migration.csv"
+    if File.exist? almapublishingidphysicalpostmigration
+      puts @@db_alma.stat[:entries]
+      csvsize =  IO.readlines(almapublishingidphysicalpostmigration).size
+      puts csvsize
+      # if( @@db_alma.stat[:entries] < 2000000 )
+        puts "Beginning almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
+        CSV.foreach(almapublishingidphysicalpostmigration, :headers => true, :encoding => 'utf-8') do |row|   # :converters => :integer
+          mms, iep = row
+          @@db_alma[iep.to_s] = mms.to_s
+        end
+        File.delete(almapublishingidphysicalpostmigration)
+        puts "Done almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
+      # end
+    end
+
     # if File.exist? "PID and MMS ID.csv"
     #   puts @@db_primo.stat[:entries]
     #   csvsize =  IO.readlines('PID and MMS ID.csv').size
