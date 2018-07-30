@@ -92,6 +92,7 @@ class Tulle < Sinatra::Base
     @@env = LMDB.new('./', mapsize: 1_000_000_000)
     @@db_diamond_primo = @@env.database('diamond_primo_db', create: true)
     @@db_shorturls = @@env.database('diamond_db', create: true)
+    @@db_alma = @@env.database('alma_db', create: true)
 
     diamondprimofile = "01tuli_inst_ds.csv"
     if File.exist? diamondprimofile
@@ -228,16 +229,18 @@ class Tulle < Sinatra::Base
       #link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_AFFIX
       perm_url = ''
       url_id = ''
-      if id[0] == 'b' # this is a diamond id
-        url_id = @@db_diamond_primo[id]
-        # almaid = @@db_alma[id]
-        # if !almaid.to_s.empty?
-        #   primoid = @@db_primo[almaid].to_s
-        # end
-      elsif id.to_s.size == 17 #this is a primo id
-        url_id = id.to_s
-      elsif id.to_s.size == 18 #this is an alma id
-        url_id = id.to_s
+      if !id.to_s.empty?
+        if id[0] == 'b' # this is a diamond id
+          url_id = @@db_diamond_primo[id]
+          # almaid = @@db_alma[id]
+          # if !almaid.to_s.empty?
+          #   primoid = @@db_primo[almaid].to_s
+          # end
+        elsif id.to_s.size == 17 #this is a primo id
+          url_id = id.to_s
+        elsif id.to_s.size == 18 #this is an alma id
+          url_id = id.to_s
+        end
       end
       if !url_id.to_s.empty?
         primo_query = @@PRIMO_ITEM_QUERY + url_id + @@PRIMO_ITEM_AFFIX
