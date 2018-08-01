@@ -139,7 +139,7 @@ class Tulle < Sinatra::Base
           begin
             @@db_alma[iep.to_s] = mms.to_s
           rescue
-            puts "Error in line " + row + " " + mms + " " + iep
+            puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
           end
         end
         File.delete(almapublishingidelectronicfull)
