@@ -134,7 +134,7 @@ class Tulle < Sinatra::Base
       puts "almapublishingidelectronicfull file size = " + csvsize.to_s
       # if( @@db_alma.stat[:entries] < 2000000 )
         puts "Beginning almapublishingidelectronicfull IDs ingest " + Time.now.to_s
-        CSV.foreach(almapublishingidelectronicfull, :headers => true, :encoding => 'utf-8') do |row|   # :converters => :integer
+        CSV.foreach(almapublishingidelectronicfull, :headers => true, :encoding => 'US-ASCII') do |row|   # :converters => :integer
           mms, iep = row
           begin
             @@db_alma[iep.to_s] = mms.to_s
