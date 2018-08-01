@@ -144,7 +144,7 @@ class Tulle < Sinatra::Base
       # if( @@db_alma.stat[:entries] < 2000000 )
         puts "Beginning almapublishingidelectronicfull IDs ingest " + Time.now.to_s
         loadfailed = false
-        CSV.foreach(almapublishingidelectronicfull, :headers => true, :encoding => 'US-ASCII') do |row|   # :converters => :integer
+        CSV.foreach(almapublishingidelectronicfull, :headers => true, :encoding => 'us-ascii', :col_sep => ',') do |row|   # :converters => :integer
           begin
             mms, iep = row
             @@db_alma[iep.to_s] = mms.to_s
@@ -169,12 +169,13 @@ class Tulle < Sinatra::Base
       # if( @@db_alma.stat[:entries] < 2000000 )
         puts "Beginning almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
         loadfailed = false
-        CSV.foreach(almapublishingidphysicalpostmigration, :headers => true, :encoding => 'utf-8') do |row|   # :converters => :integer
+        CSV.foreach(almapublishingidphysicalpostmigration, :headers => true, :encoding => 'utf-8', :col_sep => ',') do |row|   # :converters => :integer
           begin
             mms, iep = row
             @@db_alma[iep.to_s] = mms.to_s
           rescue
             puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
+            loadfailed = true
             break
           end
         end
