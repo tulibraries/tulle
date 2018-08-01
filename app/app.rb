@@ -118,11 +118,20 @@ class Tulle < Sinatra::Base
       puts "pidandmmsidcsvfile file size = " + csvsize.to_s
       # if( @@db_alma.stat[:entries] < 2000000 )
         puts "Beginning pidandmmsidcsvfile IDs ingest " + Time.now.to_s
+        loadfailed = false
         CSV.foreach(pidandmmsidcsvfile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
-          mms, iep = row
-          @@db_alma[iep.to_s] = mms.to_s
+          begin
+            mms, iep = row
+            @@db_alma[iep.to_s] = mms.to_s
+          rescue
+            puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
+            loadfailed = true
+            break
+          end
         end
-        File.delete(pidandmmsidcsvfile)
+        if loadfailed == false
+          File.delete(pidandmmsidcsvfile)
+        end
         puts "Done pidandmmsidcsvfile IDs ingest " + Time.now.to_s
       # end
     end
@@ -134,15 +143,20 @@ class Tulle < Sinatra::Base
       puts "almapublishingidelectronicfull file size = " + csvsize.to_s
       # if( @@db_alma.stat[:entries] < 2000000 )
         puts "Beginning almapublishingidelectronicfull IDs ingest " + Time.now.to_s
+        loadfailed = false
         CSV.foreach(almapublishingidelectronicfull, :headers => true, :encoding => 'US-ASCII') do |row|   # :converters => :integer
           begin
             mms, iep = row
             @@db_alma[iep.to_s] = mms.to_s
           rescue
             puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
+            loadfailed = true
+            break
           end
         end
-        File.delete(almapublishingidelectronicfull)
+        if loadfailed == false
+          File.delete(almapublishingidelectronicfull)
+        end
         puts "Done almapublishingidelectronicfull IDs ingest " + Time.now.to_s
       # end
     end
@@ -154,15 +168,19 @@ class Tulle < Sinatra::Base
       puts "almapublishingidphysicalpostmigration file size = " + csvsize.to_s
       # if( @@db_alma.stat[:entries] < 2000000 )
         puts "Beginning almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
+        loadfailed = false
         CSV.foreach(almapublishingidphysicalpostmigration, :headers => true, :encoding => 'utf-8') do |row|   # :converters => :integer
           begin
             mms, iep = row
             @@db_alma[iep.to_s] = mms.to_s
           rescue
             puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
+            break
           end
         end
-        File.delete(almapublishingidphysicalpostmigration)
+        if loadfailed == false
+          File.delete(almapublishingidphysicalpostmigration)
+        end
         puts "Done almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
       # end
     end
