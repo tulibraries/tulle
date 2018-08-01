@@ -146,7 +146,9 @@ class Tulle < Sinatra::Base
         loadfailed = false
         CSV.foreach(almapublishingidelectronicfull, :headers => true, :encoding => 'us-ascii', :col_sep => ',') do |row|   # :converters => :integer
           begin
-            mms, iep = row
+            #mms, iep = row
+            mms = row[0]
+            iep = row[1]
             @@db_alma[iep.to_s] = mms.to_s
           rescue
             puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
@@ -171,7 +173,9 @@ class Tulle < Sinatra::Base
         loadfailed = false
         CSV.foreach(almapublishingidphysicalpostmigration, :headers => true, :encoding => 'utf-8', :col_sep => ',') do |row|   # :converters => :integer
           begin
-            mms, iep = row
+            #mms, iep = row
+            mms = row[0]
+            iep = row[1]
             @@db_alma[iep.to_s] = mms.to_s
           rescue
             puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
