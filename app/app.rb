@@ -113,9 +113,9 @@ class Tulle < Sinatra::Base
     # Primo to Diamond reverse lookup for Blacklight catalog imports begin here
     pidandmmsidcsvfile = "PID and MMS ID.csv"
     if File.exist? pidandmmsidcsvfile
-      puts @@db_alma.stat[:entries]
+      puts "Alma-Primo db size = " + @@db_alma.stat[:entries]
       csvsize =  IO.readlines(pidandmmsidcsvfile).size
-      puts csvsize
+      puts "pidandmmsidcsvfile file size = " + csvsize
       # if( @@db_alma.stat[:entries] < 2000000 )
         puts "Beginning pidandmmsidcsvfile IDs ingest " + Time.now.to_s
         CSV.foreach(pidandmmsidcsvfile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
@@ -129,14 +129,18 @@ class Tulle < Sinatra::Base
 
     almapublishingidelectronicfull = "alma-publishing-id-electronic-full.csv"
     if File.exist? almapublishingidelectronicfull
-      puts @@db_alma.stat[:entries]
+      puts "Alma-Primo db size = " + @@db_alma.stat[:entries]
       csvsize =  IO.readlines(almapublishingidelectronicfull).size
-      puts csvsize
+      puts "almapublishingidelectronicfull file size = " + csvsize
       # if( @@db_alma.stat[:entries] < 2000000 )
         puts "Beginning almapublishingidelectronicfull IDs ingest " + Time.now.to_s
         CSV.foreach(almapublishingidelectronicfull, :headers => true, :encoding => 'utf-8') do |row|   # :converters => :integer
           mms, iep = row
-          @@db_alma[iep.to_s] = mms.to_s
+          begin
+            @@db_alma[iep.to_s] = mms.to_s
+          rescue
+            puts "Error in line " + row + " " + mms + " " + iep 
+          end
         end
         File.delete(almapublishingidelectronicfull)
         puts "Done almapublishingidelectronicfull IDs ingest " + Time.now.to_s
@@ -145,9 +149,9 @@ class Tulle < Sinatra::Base
 
     almapublishingidphysicalpostmigration = "alma-publishing-id-physical-post-migration.csv"
     if File.exist? almapublishingidphysicalpostmigration
-      puts @@db_alma.stat[:entries]
+      puts "Alma-Primo db size = " + @@db_alma.stat[:entries]
       csvsize =  IO.readlines(almapublishingidphysicalpostmigration).size
-      puts csvsize
+      puts "almapublishingidphysicalpostmigration file size = " + csvsize
       # if( @@db_alma.stat[:entries] < 2000000 )
         puts "Beginning almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
         CSV.foreach(almapublishingidphysicalpostmigration, :headers => true, :encoding => 'utf-8') do |row|   # :converters => :integer
