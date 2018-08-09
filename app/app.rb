@@ -63,11 +63,6 @@ class Tulle < Sinatra::Base
   @@alma_hash_length = 28
   @@hash_base = 36
 
-  set :logging, true
-  logfilename = "#{settings.root}/log/#{settings.environment}.log"
-  $logger = ::Logger.new(logfilename)
-  # @@logger.sync = true
-
   before {
     $logger.level = Logger::DEBUG
     env["rack.logger"] = $logger
@@ -86,6 +81,11 @@ class Tulle < Sinatra::Base
   }
 
   configure do  #  or def initialize () #super()
+    $logger = ::Logger.new(logfilename)
+    set :logging, true
+    logfilename = "#{settings.root}/log/#{settings.environment}.log"
+    $logger = ::Logger.new(logfilename)
+    # @@logger.sync = true
     enable :logging
     print "Logging to " + logfilename + "\n"
 
