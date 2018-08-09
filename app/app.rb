@@ -20,7 +20,7 @@ class Tulle < Sinatra::Base
   #https://temple-primo.hosted.exlibrisgroup.com/primo-explore/fulldisplay?docid=01TULI_ALMA51383143480003811&context=L&vid=TULI&search_scope=default_scope&tab=default_tab&lang=en_US
   @@PRIMO_HOSTED_SCHEME = 'https://'
   @@PRIMO_HOST = 'temple-primo.hosted.exlibrisgroup.com'
-
+  @@PRIMO_FILTER_PREFIX = '01TULI_ALMA'
   @@PRIMO_ITEM_PATH = '/primo-explore/fulldisplay'
   @@PRIMO_ITEM_QUERY = 'docid=01TULI_ALMA'
   @@PRIMO_ITEM_SUFFIX = '&context=L&vid=TULI&search_scope=default_scope&tab=default_tab&lang=en_US'
@@ -44,13 +44,6 @@ class Tulle < Sinatra::Base
   @@BL_HOST = @@BL_BETA_HOST
 
 
-  # search~thoughtz
-  # http://exl-impl-primo.hosted.exlibrisgroup.com/primo-explore/search?query=any,contains,otters&vid=01TULI
-  # http://diamond.temple.edu/search/?searchtype=X&searcharg=otters
-  # http://temple.summon.serialssolutions.com/#!/search?bookMark=ePnHCXMw42LgTQStzc4rAe_hSmEGH2NjAWw3WIAa4lxG4BNAQKeosDGIaoQnBqcGB2tCC04jQzNzY1MO2BAJlM_JwOYPPmqSm0HezTXE2UMXdGpTTmo8dIAjPgl0wIwpsPNsTFgFADzeKa0
-
-
-  @@PRIMO_FILTER_PREFIX = '01TULI_ALMA'
 
   @@cust_hash_length = 6
   #864305631152
@@ -107,7 +100,7 @@ class Tulle < Sinatra::Base
       logger.info "Diamond-Primo db size: " + @@db_diamond_primo.stat[:entries].to_s
       csvsize =  IO.readlines(diamondprimofile).size
       logger.info  "Diamond-Primo file size: " + csvsize.to_s
-      if( @@db_diamond_primo.stat[:entries] <= 2000000 )
+      # if( @@db_diamond_primo.stat[:entries] <= 2000000 )
         logger.info "Beginning primo-diamond IDs ingest " + Time.now.to_s
         CSV.foreach(diamondprimofile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           iep, diamond = row
@@ -115,7 +108,7 @@ class Tulle < Sinatra::Base
         end
         File.delete(diamondprimofile)
         logger.info "Done primo-diamond IDs ingest " + Time.now.to_s
-      end
+      # end
     end
 
     # Primo to Diamond reverse lookup for Blacklight catalog imports begin here
