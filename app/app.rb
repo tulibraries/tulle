@@ -1,6 +1,6 @@
 require 'sinatra/base'
 require 'csv'
-#require 'pry'
+require 'pry'
 require 'lmdb'
 
 class Tulle < Sinatra::Base
@@ -43,7 +43,6 @@ class Tulle < Sinatra::Base
   # Switch this to @@BL_PROD_HOST when we go live
   @@BL_HOST = @@BL_BETA_HOST
 
-
   @@cust_hash_length = 6
   #864305631152
   @@diamond_hash_length = 12
@@ -55,7 +54,16 @@ class Tulle < Sinatra::Base
   @@alma_hash_length = 28
   @@hash_base = 36
 
+  logfilename = "#{settings.root}/log/#{settings.environment}.log"
+  $logger = ::Logger.new(logfilename)
+  $logger.level = Logger::DEBUG
+  $logger.sync = true
+  print "Logging to " + logfilename + "\n"
+  Sinatra::Base.use Rack::CommonLogger, $logger
+
   before {
+    env["rack.logger"] = $logger
+    env["rack.errors"] = $logger
     #one gigarecord ought to be enough for anybody
     @@env = LMDB.new('./', mapsize: 1_000_000_000)
     @@db_diamond_primo = @@env.database('diamond_primo_db', create: true)
@@ -69,16 +77,8 @@ class Tulle < Sinatra::Base
   }
 
   configure do  #  or def initialize () #super()
-    logfilename = "#{settings.root}/log/#{settings.environment}.log"
-    $logger = ::Logger.new(logfilename)
-    $logger.level = Logger::DEBUG
+
     set :logging, true
-    # @@logger.sync = true
-    # enable :logging
-    print "Logging to " + logfilename + "\n"
-    Sinatra::Base.use Rack::CommonLogger, $logger
-    env["rack.logger"] = $logger
-    env["rack.errors"] = $logger
 
     #set :public_folder, '/public'
     #set :static, true
@@ -93,35 +93,35 @@ class Tulle < Sinatra::Base
 
     diamondprimofile = "01tuli_inst_ds.csv"
     if File.exist? diamondprimofile
-      logger.info "Diamond-Primo db size: " + @@db_diamond_primo.stat[:entries].to_s
+      puts "Diamond-Primo db size: " + @@db_diamond_primo.stat[:entries].to_s
       csvsize =  IO.readlines(diamondprimofile).size
-      logger.info  "Diamond-Primo file size: " + csvsize.to_s
+      puts  "Diamond-Primo file size: " + csvsize.to_s
       # if( @@db_diamond_primo.stat[:entries] <= 2000000 )
-        logger.info "Beginning primo-diamond IDs ingest " + Time.now.to_s
+        puts "Beginning primo-diamond IDs ingest " + Time.now.to_s
         CSV.foreach(diamondprimofile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           iep, diamond = row
           @@db_diamond_primo[diamond.to_s[0..7]] = iep.to_s
         end
         File.delete(diamondprimofile)
-        logger.info "Done primo-diamond IDs ingest " + Time.now.to_s
+        puts "Done primo-diamond IDs ingest " + Time.now.to_s
       # end
     end
 
     # Primo to Diamond reverse lookup for Blacklight catalog imports begin here
     pidandmmsidcsvfile = "PID and MMS ID.csv"
     if File.exist? pidandmmsidcsvfile
-      logger.info "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
+      puts "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
       csvsize =  IO.readlines(pidandmmsidcsvfile).size
-      logger.info "pidandmmsidcsvfile file size = " + csvsize.to_s
+      puts "pidandmmsidcsvfile file size = " + csvsize.to_s
       # if( @@db_alma.stat[:entries] < 2000000 )
-        logger.info "Beginning pidandmmsidcsvfile IDs ingest " + Time.now.to_s
+        puts "Beginning pidandmmsidcsvfile IDs ingest " + Time.now.to_s
         loadfailed = false
         CSV.foreach(pidandmmsidcsvfile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           begin
             mms, iep = row
             @@db_alma[iep.to_s] = mms.to_s
           rescue
-            logger.info "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
+            puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
             loadfailed = true
             break
           end
@@ -129,17 +129,17 @@ class Tulle < Sinatra::Base
         if loadfailed == false
           File.delete(pidandmmsidcsvfile)
         end
-        logger.info "Done pidandmmsidcsvfile IDs ingest " + Time.now.to_s
+        puts "Done pidandmmsidcsvfile IDs ingest " + Time.now.to_s
       # end
     end
 
     almapublishingidelectronicfull = "alma-publishing-id-electronic-full.csv"
     if File.exist? almapublishingidelectronicfull
-      logger.info "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
+      puts "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
       csvsize =  IO.readlines(almapublishingidelectronicfull).size
-      logger.info "almapublishingidelectronicfull file size = " + csvsize.to_s
+      puts "almapublishingidelectronicfull file size = " + csvsize.to_s
       # if( @@db_alma.stat[:entries] < 2000000 )
-        logger.info "Beginning almapublishingidelectronicfull IDs ingest " + Time.now.to_s
+        puts "Beginning almapublishingidelectronicfull IDs ingest " + Time.now.to_s
         loadfailed = false
         CSV.foreach(almapublishingidelectronicfull, :headers => true, :encoding => 'us-ascii', :col_sep => ',') do |row|   # :converters => :integer
           begin
@@ -148,7 +148,7 @@ class Tulle < Sinatra::Base
             iep = row[1]
             @@db_alma[iep.to_s] = mms.to_s
           rescue
-            logger.info "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
+            puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
             loadfailed = true
             break
           end
@@ -156,17 +156,17 @@ class Tulle < Sinatra::Base
         if loadfailed == false
           File.delete(almapublishingidelectronicfull)
         end
-        logger.info "Done almapublishingidelectronicfull IDs ingest " + Time.now.to_s
+        puts "Done almapublishingidelectronicfull IDs ingest " + Time.now.to_s
       # end
     end
 
     almapublishingidphysicalpostmigration = "alma-publishing-id-physical-post-migration.csv"
     if File.exist? almapublishingidphysicalpostmigration
-      logger.info "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
+      puts "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
       csvsize =  IO.readlines(almapublishingidphysicalpostmigration).size
-      logger.info "almapublishingidphysicalpostmigration file size = " + csvsize.to_s
+      puts "almapublishingidphysicalpostmigration file size = " + csvsize.to_s
       # if( @@db_alma.stat[:entries] < 2000000 )
-        logger.info "Beginning almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
+        puts "Beginning almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
         loadfailed = false
         CSV.foreach(almapublishingidphysicalpostmigration, :headers => true, :encoding => 'utf-8', :col_sep => ',') do |row|   # :converters => :integer
           begin
@@ -175,7 +175,7 @@ class Tulle < Sinatra::Base
             iep = row[1]
             @@db_alma[iep.to_s] = mms.to_s
           rescue
-            logger.info "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
+            puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
             loadfailed = true
             break
           end
@@ -183,7 +183,7 @@ class Tulle < Sinatra::Base
         if loadfailed == false
           File.delete(almapublishingidphysicalpostmigration)
         end
-        logger.info "Done almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
+        puts "Done almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
       # end
     end
 
@@ -217,24 +217,23 @@ class Tulle < Sinatra::Base
 
     augmentfile = "Diamond-Primo-manual-updated.csv"
     if File.exist? augmentfile
-      logger.info @@db_diamond_primo.stat[:entries]
+      puts @@db_diamond_primo.stat[:entries]
       csvsize = IO.readlines(augmentfile).size
-      logger.info csvsize
+      puts csvsize
       begin
-        logger.info "Beginning manual IDs ingest " + Time.now.to_s
+        puts "Beginning manual IDs ingest " + Time.now.to_s
         CSV.foreach(augmentfile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           diamond, mms = row
           @@db_diamond_primo[diamond.to_s[0..7]] = mms.to_s
         end
-        logger.info "Done manual IDs ingest " + Time.now.to_s
+        puts "Done manual IDs ingest " + Time.now.to_s
         File.delete(augmentfile)
       rescue Exception => e
-        logger.info e.message
-        logger.info e.backtrace.inspect
+        puts e.message
+        puts e.backtrace.inspect
       end
     end
   end
-
 
   helpers do
     include Rack::Utils
