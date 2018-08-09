@@ -31,13 +31,11 @@ class Tulle < Sinatra::Base
   @@SEARCH_FAQ_PATH = '/library-search-faq'
 
   #http://libqa.library.temple.edu/catalog/catalog/991011767249703811
-  # @@BL_SCHEME = 'https://'
-  # @@BL_HOST = 'libqa.library.temple.edu/'
-  # @@BL_PATH = 'catalog/catalog/'
+  @@BL_QA_HOST = 'libqa.library.temple.edu/'
+  @@BL_QA_PATH = 'catalog/catalog/'
 
   #https://librarybeta.temple.edu/catalog/991036802751503811
   @@BL_SCHEME = 'https://'
-  @@BL_QA_HOST = 'libqa.library.temple.edu/'
   @@BL_BETA_HOST = 'librarybeta.temple.edu/'
   @@BL_PROD_HOST = 'librarysearch.temple.edu/'
   @@BL_PATH = 'catalog/'
@@ -470,7 +468,7 @@ class Tulle < Sinatra::Base
             @@db_shorturls[shortcode] = item_id
           end
           logger.info logmsg
-        elsif uri.host == @@BL_HOST || uri.host == @@BL_BETA_HOST
+        elsif uri.host == @@BL_PROD_HOST || uri.host == @@BL_BETA_HOST
           path_tokens = uri.path.split('/')
           logmsg += " Blacklight Path tokens: " + path_tokens.to_s
           if path_tokens.length >= 2
