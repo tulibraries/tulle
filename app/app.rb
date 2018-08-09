@@ -1,6 +1,6 @@
 require 'sinatra/base'
 require 'csv'
-require 'pry'
+# require 'pry'
 require 'lmdb'
 
 class Tulle < Sinatra::Base
@@ -57,7 +57,7 @@ class Tulle < Sinatra::Base
   logfilename = "#{settings.root}/log/#{settings.environment}.log"
   $logger = ::Logger.new(logfilename)
   $logger.level = Logger::DEBUG
-  $logger.sync = true
+  # $logger.sync = true
   print "Logging to " + logfilename + "\n"
   Sinatra::Base.use Rack::CommonLogger, $logger
 
@@ -325,15 +325,19 @@ class Tulle < Sinatra::Base
     link = ''
     logmsg = ''
     begin
-      logmsg += "new shorturl request: "
-    	linkid = params[:captures][0]
-      logmsg += " linkid: " + linkid.to_s + " referrer: " + request.referrer.to_s
-      if linkid.length == @@diamond_hash_length || linkid.length == @@primo_hash_length || linkid.length == @@alma_hash_length
-        link = get_perm_path( @@db_shorturls[linkid] )
+      logmsg += "new shorturl request: " + params[:captures].to_s
+      if !params[:captures].to_s.empty?
+      	linkid = params[:captures][0]
+        logmsg += " linkid: " + linkid.to_s + " referrer: " + request.referrer.to_s
+        if linkid.length == @@diamond_hash_length || linkid.length == @@primo_hash_length || linkid.length == @@alma_hash_length
+          link = get_perm_path( @@db_shorturls[linkid] )
+        else
+          logmsg += " error linkid.length: " + linkid.length.to_s
+        end
+        logmsg += " retrieved link: " + link.to_s
       else
-        logmsg += " error linkid.length: " + linkid.length.to_s
+        logmsg += " error params[:captures] length: " + params[:captures].length.to_s
       end
-      logmsg += " retrieved link: " + link.to_s
     rescue Exception => e
       logmsg += " shorturl lookup/redirect error "
       logmsg += e.message.to_s
