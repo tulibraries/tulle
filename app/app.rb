@@ -32,13 +32,13 @@ class Tulle < Sinatra::Base
 
   #http://libqa.library.temple.edu/catalog/catalog/991011767249703811
   @@BL_QA_HOST = 'libqa.library.temple.edu/'
-  @@BL_QA_PATH = 'catalog/catalog/'
+  @@BL_QA_PATH = '/catalog/catalog/'
 
   #https://librarybeta.temple.edu/catalog/991036802751503811
   @@BL_SCHEME = 'https://'
-  @@BL_BETA_HOST = 'librarybeta.temple.edu/'
-  @@BL_PROD_HOST = 'librarysearch.temple.edu/'
-  @@BL_PATH = 'catalog/'
+  @@BL_BETA_HOST = 'librarybeta.temple.edu'
+  @@BL_PROD_HOST = 'librarysearch.temple.edu'
+  @@BL_PATH = '/catalog/'
 
 
 
@@ -441,7 +441,7 @@ class Tulle < Sinatra::Base
 
         if !uri.scheme #forgot the http:// ? let's help 'em out
           logmsg += " Adding scheme. "
-          @input_url = @@DIAMOND_SCHEME + @input_url
+          @input_url = @@BL_SCHEME + @input_url
           uri = URI(@input_url)
         end
 
@@ -479,6 +479,9 @@ class Tulle < Sinatra::Base
               @@db_shorturls[shortcode] = item_id
             end
           end
+          logger.info logmsg
+        else
+          logmsg += " host " + uri.host.to_s + " did not match any known catalog host"
           logger.info logmsg
         end
         if shortcode.to_s.empty?
