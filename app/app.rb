@@ -40,6 +40,8 @@ class Tulle < Sinatra::Base
   @@BL_PROD_HOST = 'librarysearch.temple.edu'
   @@BL_PATH = '/catalog/'
 
+  # Switch this to @@BL_PROD_HOST when we go live
+  @@BL_HOST = @@BL_BETA_HOST
 
 
   # search~thoughtz
@@ -280,8 +282,9 @@ class Tulle < Sinatra::Base
         end
       end
       if !url_id.to_s.empty?
-        primo_query = @@PRIMO_ITEM_QUERY + url_id + @@PRIMO_ITEM_SUFFIX
-        perm_url = URI::HTTPS.build(:scheme => @@PRIMO_HOSTED_SCHEME, :host => @@PRIMO_HOST, :path => @@PRIMO_ITEM_PATH, :query => primo_query).to_s
+        # primo_query = @@PRIMO_ITEM_QUERY + url_id + @@PRIMO_ITEM_SUFFIX
+        # perm_url = URI::HTTPS.build(:scheme => @@PRIMO_HOSTED_SCHEME, :host => @@PRIMO_HOST, :path => @@PRIMO_ITEM_PATH, :query => primo_query).to_s
+        perm_url = URI::HTTPS.build(:scheme => @@BL_SCHEME, :host => @@BL_HOST, :path => @@BL_PATH + url_id.to_s).to_s
       else
         logger.info "get_perm_path ERROR: " + id.to_s + " not found in db"
       end
@@ -309,10 +312,6 @@ class Tulle < Sinatra::Base
     end
 
   end
-
-  # get %r{.*/diamond_sunset.png} do
-  #   redirect('/public/diamond_sunset.png')
-  # end
 
   get '/' + @@SHORTENER_STATS_ROUTE do
     @stats = dump_db( @@db_shorturls )
@@ -383,6 +382,7 @@ class Tulle < Sinatra::Base
     end
   end
 
+  # The old diamond domain points here. Redirect those links to the new catalog
   get '/' + @@DIAMOND_PATH + '*' do
     logmsg = ''
     begin
