@@ -15,7 +15,7 @@ class Tulle < Sinatra::Base
   @@DIAMOND_SCHEME = 'http://'
   @@DIAMOND_HOST = 'diamond.temple.edu'
   @@DIAMOND_PATH = 'record='
-  @@DIAMOND_AFFIX = '~S30'
+  @@DIAMOND_SUFFIX = '~S30'
 
   #https://temple-primo.hosted.exlibrisgroup.com/primo-explore/fulldisplay?docid=01TULI_ALMA51383143480003811&context=L&vid=TULI&search_scope=default_scope&tab=default_tab&lang=en_US
   @@PRIMO_HOSTED_SCHEME = 'https://'
@@ -23,7 +23,7 @@ class Tulle < Sinatra::Base
 
   @@PRIMO_ITEM_PATH = '/primo-explore/fulldisplay'
   @@PRIMO_ITEM_QUERY = 'docid=01TULI_ALMA'
-  @@PRIMO_ITEM_AFFIX = '&context=L&vid=TULI&search_scope=default_scope&tab=default_tab&lang=en_US'
+  @@PRIMO_ITEM_SUFFIX = '&context=L&vid=TULI&search_scope=default_scope&tab=default_tab&lang=en_US'
 
   @@PRIMO_ACCOUNT_PATH = '/primo-explore/account'
   @@PRIMO_ACCOUNT_QUERY = 'vid=TULI&lang=en_US&section=overview'
@@ -31,9 +31,17 @@ class Tulle < Sinatra::Base
   @@SEARCH_FAQ_PATH = '/library-search-faq'
 
   #http://libqa.library.temple.edu/catalog/catalog/991011767249703811
+  # @@BL_SCHEME = 'https://'
+  # @@BL_HOST = 'libqa.library.temple.edu/'
+  # @@BL_PATH = 'catalog/catalog/'
+
+  #https://librarybeta.temple.edu/catalog/991036802751503811
   @@BL_SCHEME = 'https://'
-  @@BL_HOST = 'libqa.library.temple.edu/'
-  @@BL_PATH = 'catalog/catalog/'
+  @@BL_QA_HOST = 'libqa.library.temple.edu/'
+  @@BL_BETA_HOST = 'librarybeta.temple.edu/'
+  @@BL_PROD_HOST = 'librarysearch.temple.edu/'
+  @@BL_PATH = 'catalog/'
+
 
 
   # search~thoughtz
@@ -96,35 +104,35 @@ class Tulle < Sinatra::Base
 
     diamondprimofile = "01tuli_inst_ds.csv"
     if File.exist? diamondprimofile
-      puts "Diamond-Primo db size: " + @@db_diamond_primo.stat[:entries].to_s
+      logger.info "Diamond-Primo db size: " + @@db_diamond_primo.stat[:entries].to_s
       csvsize =  IO.readlines(diamondprimofile).size
-      puts  "Diamond-Primo file size: " + csvsize.to_s
+      logger.info  "Diamond-Primo file size: " + csvsize.to_s
       if( @@db_diamond_primo.stat[:entries] <= 2000000 )
-        puts "Beginning primo-diamond IDs ingest " + Time.now.to_s
+        logger.info "Beginning primo-diamond IDs ingest " + Time.now.to_s
         CSV.foreach(diamondprimofile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           iep, diamond = row
           @@db_diamond_primo[diamond.to_s[0..7]] = iep.to_s
         end
         File.delete(diamondprimofile)
-        puts "Done primo-diamond IDs ingest " + Time.now.to_s
+        logger.info "Done primo-diamond IDs ingest " + Time.now.to_s
       end
     end
 
     # Primo to Diamond reverse lookup for Blacklight catalog imports begin here
     pidandmmsidcsvfile = "PID and MMS ID.csv"
     if File.exist? pidandmmsidcsvfile
-      puts "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
+      logger.info "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
       csvsize =  IO.readlines(pidandmmsidcsvfile).size
-      puts "pidandmmsidcsvfile file size = " + csvsize.to_s
+      logger.info "pidandmmsidcsvfile file size = " + csvsize.to_s
       # if( @@db_alma.stat[:entries] < 2000000 )
-        puts "Beginning pidandmmsidcsvfile IDs ingest " + Time.now.to_s
+        logger.info "Beginning pidandmmsidcsvfile IDs ingest " + Time.now.to_s
         loadfailed = false
         CSV.foreach(pidandmmsidcsvfile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           begin
             mms, iep = row
             @@db_alma[iep.to_s] = mms.to_s
           rescue
-            puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
+            logger.info "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
             loadfailed = true
             break
           end
@@ -132,17 +140,17 @@ class Tulle < Sinatra::Base
         if loadfailed == false
           File.delete(pidandmmsidcsvfile)
         end
-        puts "Done pidandmmsidcsvfile IDs ingest " + Time.now.to_s
+        logger.info "Done pidandmmsidcsvfile IDs ingest " + Time.now.to_s
       # end
     end
 
     almapublishingidelectronicfull = "alma-publishing-id-electronic-full.csv"
     if File.exist? almapublishingidelectronicfull
-      puts "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
+      logger.info "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
       csvsize =  IO.readlines(almapublishingidelectronicfull).size
-      puts "almapublishingidelectronicfull file size = " + csvsize.to_s
+      logger.info "almapublishingidelectronicfull file size = " + csvsize.to_s
       # if( @@db_alma.stat[:entries] < 2000000 )
-        puts "Beginning almapublishingidelectronicfull IDs ingest " + Time.now.to_s
+        logger.info "Beginning almapublishingidelectronicfull IDs ingest " + Time.now.to_s
         loadfailed = false
         CSV.foreach(almapublishingidelectronicfull, :headers => true, :encoding => 'us-ascii', :col_sep => ',') do |row|   # :converters => :integer
           begin
@@ -151,7 +159,7 @@ class Tulle < Sinatra::Base
             iep = row[1]
             @@db_alma[iep.to_s] = mms.to_s
           rescue
-            puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
+            logger.info "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
             loadfailed = true
             break
           end
@@ -159,17 +167,17 @@ class Tulle < Sinatra::Base
         if loadfailed == false
           File.delete(almapublishingidelectronicfull)
         end
-        puts "Done almapublishingidelectronicfull IDs ingest " + Time.now.to_s
+        logger.info "Done almapublishingidelectronicfull IDs ingest " + Time.now.to_s
       # end
     end
 
     almapublishingidphysicalpostmigration = "alma-publishing-id-physical-post-migration.csv"
     if File.exist? almapublishingidphysicalpostmigration
-      puts "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
+      logger.info "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
       csvsize =  IO.readlines(almapublishingidphysicalpostmigration).size
-      puts "almapublishingidphysicalpostmigration file size = " + csvsize.to_s
+      logger.info "almapublishingidphysicalpostmigration file size = " + csvsize.to_s
       # if( @@db_alma.stat[:entries] < 2000000 )
-        puts "Beginning almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
+        logger.info "Beginning almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
         loadfailed = false
         CSV.foreach(almapublishingidphysicalpostmigration, :headers => true, :encoding => 'utf-8', :col_sep => ',') do |row|   # :converters => :integer
           begin
@@ -178,7 +186,7 @@ class Tulle < Sinatra::Base
             iep = row[1]
             @@db_alma[iep.to_s] = mms.to_s
           rescue
-            puts "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
+            logger.info "Error in line " + row.to_s + " " + mms.to_s + " " + iep.to_s
             loadfailed = true
             break
           end
@@ -186,7 +194,7 @@ class Tulle < Sinatra::Base
         if loadfailed == false
           File.delete(almapublishingidphysicalpostmigration)
         end
-        puts "Done almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
+        logger.info "Done almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
       # end
     end
 
@@ -220,20 +228,20 @@ class Tulle < Sinatra::Base
 
     augmentfile = "Diamond-Primo-manual-updated.csv"
     if File.exist? augmentfile
-      puts @@db_diamond_primo.stat[:entries]
+      logger.info @@db_diamond_primo.stat[:entries]
       csvsize = IO.readlines(augmentfile).size
-      puts csvsize
+      logger.info csvsize
       begin
-        puts "Beginning manual IDs ingest " + Time.now.to_s
+        logger.info "Beginning manual IDs ingest " + Time.now.to_s
         CSV.foreach(augmentfile, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
           diamond, mms = row
           @@db_diamond_primo[diamond.to_s[0..7]] = mms.to_s
         end
-        puts "Done manual IDs ingest " + Time.now.to_s
+        logger.info "Done manual IDs ingest " + Time.now.to_s
         File.delete(augmentfile)
       rescue Exception => e
-        puts e.message
-        puts e.backtrace.inspect
+        logger.info e.message
+        logger.info e.backtrace.inspect
       end
     end
   end
@@ -257,7 +265,7 @@ class Tulle < Sinatra::Base
     end
 
     def get_perm_path( id )
-      #link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_AFFIX
+      #link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_SUFFIX
       perm_url = ''
       url_id = ''
       if !id.to_s.empty?
@@ -274,10 +282,10 @@ class Tulle < Sinatra::Base
         end
       end
       if !url_id.to_s.empty?
-        primo_query = @@PRIMO_ITEM_QUERY + url_id + @@PRIMO_ITEM_AFFIX
+        primo_query = @@PRIMO_ITEM_QUERY + url_id + @@PRIMO_ITEM_SUFFIX
         perm_url = URI::HTTPS.build(:scheme => @@PRIMO_HOSTED_SCHEME, :host => @@PRIMO_HOST, :path => @@PRIMO_ITEM_PATH, :query => primo_query).to_s
       else
-        puts "get_perm_path ERROR: " + id.to_s + " not found in db"
+        logger.info "get_perm_path ERROR: " + id.to_s + " not found in db"
       end
       return perm_url
     end
@@ -450,6 +458,7 @@ class Tulle < Sinatra::Base
               @@db_shorturls[shortcode] = item_id
             end
           end
+          logger.info logmsg
         elsif uri.host == @@PRIMO_HOST
           path_tokens = URI::decode_www_form(uri.query).to_h
           logmsg += " Primo Query tokens: " + path_tokens.to_s
@@ -460,10 +469,11 @@ class Tulle < Sinatra::Base
             shortcode = url_hash( item_id )
             @@db_shorturls[shortcode] = item_id
           end
-        elsif uri.host == @@BL_HOST
+          logger.info logmsg
+        elsif uri.host == @@BL_HOST || uri.host == @@BL_BETA_HOST
           path_tokens = uri.path.split('/')
           logmsg += " Blacklight Path tokens: " + path_tokens.to_s
-          if path_tokens.length > 2
+          if path_tokens.length >= 2
             item_id = path_tokens.last
             if !item_id.to_s.empty?
               logmsg += " item id: " + item_id.to_s
@@ -471,6 +481,7 @@ class Tulle < Sinatra::Base
               @@db_shorturls[shortcode] = item_id
             end
           end
+          logger.info logmsg
         end
         if shortcode.to_s.empty?
           #arbitrary links allowed?
