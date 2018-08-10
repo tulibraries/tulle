@@ -353,6 +353,7 @@ class Tulle < Sinatra::Base
           if !newid.to_s.empty?
             link = get_perm_path( newid )
           else
+            link = get_err_link()
             logmsg += " error linkid not found in shorturls db: " + linkid
           end
         else
