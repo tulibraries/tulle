@@ -282,7 +282,7 @@ class Tulle < Sinatra::Base
           #   primoid = @@db_primo[almaid].to_s
           # end
         elsif id.to_s.size == 17 #this is a primo id
-          url_id = id.to_s
+          url_id = @@db_alma[id.to_s]
         elsif id.to_s.size == 18 #this is an alma id
           url_id = id.to_s
         end
