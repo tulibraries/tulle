@@ -325,9 +325,9 @@ class Tulle < Sinatra::Base
     link = ''
     logmsg = ''
     begin
-      logmsg += "new shorturl request: " + params[:captures].to_s
-      if !params[:captures].to_s.empty?
-      	linkid = params[:captures][0]
+      logmsg += "new shorturl request: " + params[:splat].to_s
+      if !params[:splat].to_s.empty?
+      	linkid = params[:splat][0]
         logmsg += " linkid: " + linkid.to_s + " referrer: " + request.referrer.to_s
         if linkid.length == @@diamond_hash_length || linkid.length == @@primo_hash_length || linkid.length == @@alma_hash_length
           link = get_perm_path( @@db_shorturls[linkid] )
@@ -336,7 +336,7 @@ class Tulle < Sinatra::Base
         end
         logmsg += " retrieved link: " + link.to_s
       else
-        logmsg += " error params[:captures] length: " + params[:captures].length.to_s
+        logmsg += " error params[:splat] length: " + params[:splat].to_s
       end
     rescue Exception => e
       logmsg += " shorturl lookup/redirect error "
@@ -346,7 +346,7 @@ class Tulle < Sinatra::Base
       link = get_err_link()
     end
     logger.info logmsg
-  	redirect link, 301
+    redirect link, 301
     #301 moved permanently
   end
 
