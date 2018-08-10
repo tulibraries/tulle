@@ -232,6 +232,25 @@ class Tulle < Sinatra::Base
         puts e.backtrace.inspect
       end
     end
+
+    old_mappings_backup = "tulle_mappings_20180810.csv"
+    if File.exist? old_mappings_backup
+      puts "Mappings db size: " + @@db_shorturls.stat[:entries].to_s
+      csvsize =  IO.readlines(old_mappings_backup).size
+      puts  "Mappings file size: " + csvsize.to_s
+      puts "Beginning old mappings ingest " + Time.now.to_s
+      begin
+        CSV.foreach(old_mappings_backup, :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
+          hash, cat = row
+          @@db_shorturls[hash.to_s] = cat.to_s
+        end
+        puts "Done old mappings ingest " + Time.now.to_s
+        File.delete(old_mappings_backup)
+      rescue Exception => e
+        puts e.message
+        puts e.backtrace.inspect
+      end
+    end
   end
 
   helpers do
@@ -274,6 +293,7 @@ class Tulle < Sinatra::Base
         perm_url = URI::HTTPS.build(:scheme => @@BL_SCHEME, :host => @@BL_HOST, :path => @@BL_PATH + url_id.to_s).to_s
       else
         logger.info "get_perm_path ERROR: " + id.to_s + " not found in db"
+        perm_url = get_err_link()
       end
       return perm_url
     end
@@ -329,7 +349,12 @@ class Tulle < Sinatra::Base
       	linkid = params[:splat][0]
         logmsg += " linkid: " + linkid.to_s + " referrer: " + request.referrer.to_s
         if linkid.length == @@diamond_hash_length || linkid.length == @@primo_hash_length || linkid.length == @@alma_hash_length
-          link = get_perm_path( @@db_shorturls[linkid] )
+          newid = @@db_shorturls[linkid]
+          if !newid.to_s.empty?
+            link = get_perm_path( newid )
+          else
+            logmsg += " error linkid not found in shorturls db: " + linkid
+          end
         else
           logmsg += " error linkid.length: " + linkid.length.to_s
         end
