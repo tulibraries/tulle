@@ -40,8 +40,7 @@ class Tulle < Sinatra::Base
   @@BL_PROD_HOST = 'librarysearch.temple.edu'
   @@BL_PATH = '/catalog/'
 
-  # Switch this to @@BL_PROD_HOST when we go live
-  @@BL_HOST = @@BL_BETA_HOST
+  @@BL_HOST = @@BL_PROD_HOST
 
   @@cust_hash_length = 6
   #864305631152
