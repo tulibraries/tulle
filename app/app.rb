@@ -274,25 +274,33 @@ class Tulle < Sinatra::Base
       #link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_SUFFIX
       perm_url = ''
       url_id = ''
-      if !id.to_s.empty?
-        if id[0] == 'b' # this is a diamond id
-          url_id = @@db_diamond_primo[id]
-          # almaid = @@db_alma[id]
-          # if !almaid.to_s.empty?
-          #   primoid = @@db_primo[almaid].to_s
-          # end
-        elsif id.to_s.size == 17 #this is a primo id
-          url_id = id.to_s
-        elsif id.to_s.size == 18 #this is an alma id
-          url_id = id.to_s
+      begin
+        if !id.to_s.empty?
+          if id[0] == 'b' # this is a diamond id
+            primo_id = @@db_diamond_primo[id.to_s]
+            url_id = @@db_alma[primo_id.to_s]
+            # if !almaid.to_s.empty?
+            #   primoid = @@db_primo[almaid].to_s
+            # end
+          elsif id.to_s.size == 17 #this is a primo id
+            url_id = @@db_alma[id.to_s]
+          elsif id.to_s.size == 18 #this is an alma id
+            url_id = id.to_s
+          end
         end
-      end
-      if !url_id.to_s.empty?
-        # primo_query = @@PRIMO_ITEM_QUERY + url_id + @@PRIMO_ITEM_SUFFIX
-        # perm_url = URI::HTTPS.build(:scheme => @@PRIMO_HOSTED_SCHEME, :host => @@PRIMO_HOST, :path => @@PRIMO_ITEM_PATH, :query => primo_query).to_s
-        perm_url = URI::HTTPS.build(:scheme => @@BL_SCHEME, :host => @@BL_HOST, :path => @@BL_PATH + url_id.to_s).to_s
-      else
-        logger.info "get_perm_path ERROR: " + id.to_s + " not found in db"
+        if !url_id.to_s.empty?
+          # primo_query = @@PRIMO_ITEM_QUERY + url_id + @@PRIMO_ITEM_SUFFIX
+          # perm_url = URI::HTTPS.build(:scheme => @@PRIMO_HOSTED_SCHEME, :host => @@PRIMO_HOST, :path => @@PRIMO_ITEM_PATH, :query => primo_query).to_s
+          perm_url = URI::HTTPS.build(:scheme => @@BL_SCHEME, :host => @@BL_HOST, :path => @@BL_PATH + url_id.to_s).to_s
+        else
+          logger.info "get_perm_path ERROR: " + id.to_s + " not found in db"
+          perm_url = get_err_link()
+        end
+      rescue Exception => e
+        logmsg += " get_perm_path lookup/redirect error "
+        logmsg += e.message.to_s
+        logmsg += e.backtrace.inspect.to_s
+        logger.info logmsg
         perm_url = get_err_link()
       end
       return perm_url
@@ -488,7 +496,8 @@ class Tulle < Sinatra::Base
         elsif uri.host == @@BL_PROD_HOST || uri.host == @@BL_BETA_HOST
           path_tokens = uri.path.split('/')
           logmsg += " Blacklight Path tokens: " + path_tokens.to_s
-          if path_tokens.length >= 2
+          # check for well-formed BL catalog URL. Disallow articles links
+          if path_tokens.length >= 2 && !path_tokes.include?( 'articles' )
             item_id = path_tokens.last
             if !item_id.to_s.empty?
               logmsg += " item id: " + item_id.to_s
@@ -501,11 +510,9 @@ class Tulle < Sinatra::Base
           logmsg += " host " + uri.host.to_s + " did not match any known catalog host"
           logger.info logmsg
         end
+        # we will end up here if the submitted link was invalid
+        # if so, redirect the user to the instructions page
         if shortcode.to_s.empty?
-          #arbitrary links allowed?
-          # shortcode = url_hash
-          # item_id = @input_url
-          # @@db_customurls[shortcode] = item_id
           logmsg += " ERROR: shorturl post got invalid link. "
           link = get_err_link()
           logger.info logmsg
