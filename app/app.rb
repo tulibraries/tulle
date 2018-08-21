@@ -496,11 +496,12 @@ class Tulle < Sinatra::Base
         elsif uri.host == @@BL_PROD_HOST || uri.host == @@BL_BETA_HOST
           path_tokens = uri.path.split('/')
           logmsg += " Blacklight Path tokens: " + path_tokens.to_s
-          # check for well-formed BL catalog URL. Disallow articles links
-          if path_tokens.length >= 2 && !path_tokens.include?( 'articles' )
+          # check for well-formed BL catalog URL. Disallow articles and bento links
+          if path_tokens.length >= 2 && path_tokens.include?( 'catalog' ) && !path_tokens.include?( 'articles' ) && !path_tokens.include?( 'bento' )
             item_id = path_tokens.last
-            if !item_id.to_s.empty?
-              logmsg += " item id: " + item_id.to_s
+            logmsg += " item id: " + item_id.to_s
+            # check that the token is a numeric id
+            if !item_id.to_s.empty? && item_id.to_s !~ /\D/
               shortcode = url_hash( item_id )
               @@db_shorturls[shortcode] = item_id
             end
