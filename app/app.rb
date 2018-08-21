@@ -497,7 +497,7 @@ class Tulle < Sinatra::Base
           path_tokens = uri.path.split('/')
           logmsg += " Blacklight Path tokens: " + path_tokens.to_s
           # check for well-formed BL catalog URL. Disallow articles links
-          if path_tokens.length >= 2 && !path_tokes.include?( 'articles' )
+          if path_tokens.length >= 2 && !path_tokens.include?( 'articles' )
             item_id = path_tokens.last
             if !item_id.to_s.empty?
               logmsg += " item id: " + item_id.to_s
