@@ -7,6 +7,7 @@ class Tulle < Sinatra::Base
 
   @@SHORTENER_SCHEME = 'http://'
   @@SHORTENER_HOST = 'library.temple.edu'  #'127.0.0.1:9393/'  '45.33.71.165'
+  @@SHORTENER_WEB_DIR = 'link_exchange'
   @@SHORTENER_PATH = 'r'
   @@SHORTENER_ERR_ROUTE = 'err'
   @@SHORTENER_STATS_ROUTE = 'stats'
@@ -307,7 +308,7 @@ class Tulle < Sinatra::Base
     end
 
     def get_err_link()
-      link = @application_url.to_s + '/' + @@SHORTENER_ERR_ROUTE
+      link = @application_url.to_s + '/' + @@SHORTENER_WEB_DIR + '/' + @@SHORTENER_ERR_ROUTE
       return link
     end
 
