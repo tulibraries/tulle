@@ -275,6 +275,7 @@ class Tulle < Sinatra::Base
       #link =  URI::HTTP.build(:host => @@DIAMOND_HOST, :path => '/' + @@DIAMOND_PATH + diamond_id + @@DIAMOND_SUFFIX
       perm_url = ''
       url_id = ''
+      primo_id = ''
       begin
         if !id.to_s.empty?
           if id[0] == 'b' # this is a diamond id
@@ -294,7 +295,7 @@ class Tulle < Sinatra::Base
           # perm_url = URI::HTTPS.build(:scheme => @@PRIMO_HOSTED_SCHEME, :host => @@PRIMO_HOST, :path => @@PRIMO_ITEM_PATH, :query => primo_query).to_s
           perm_url = URI::HTTPS.build(:scheme => @@BL_SCHEME, :host => @@BL_HOST, :path => @@BL_PATH + url_id.to_s).to_s
         else
-          logger.info "get_perm_path ERROR: " + id.to_s + " not found in db"
+          logger.info "get_perm_path ERROR: " + id.to_s + " not found in db. Primo ID=" + primo_id.to_s
           perm_url = get_err_link()
         end
       rescue Exception => e
@@ -414,10 +415,10 @@ class Tulle < Sinatra::Base
     begin
       logmsg += "new shorturl redirect: " + params.to_s
       logmsg += " referrer: " + request.referrer.to_s
-      if params[:captures].is_a? String
-        linkid = params[:captures]
+      if params[:splat].is_a? String
+        linkid = params[:splat]
       else
-        linkid = params[:captures][0]
+        linkid = params[:splat][0]
       end
       linkid = linkid[0..7]
       logmsg += " link id: " + linkid.to_s
