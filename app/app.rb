@@ -278,6 +278,7 @@ class Tulle < Sinatra::Base
       perm_url = ''
       url_id = ''
       primo_id = ''
+      logmsg = ''
       begin
         if !id.to_s.empty?
           if id[0] == 'b' # this is a diamond id
@@ -298,20 +299,25 @@ class Tulle < Sinatra::Base
           perm_url = URI::HTTPS.build(:scheme => @@BL_SCHEME, :host => @@BL_HOST, :path => @@BL_PATH + url_id.to_s).to_s
         else
           logger.info "get_perm_path ERROR: " + id.to_s + " not found in db. Primo ID=" + primo_id.to_s
-          perm_url = get_err_link()
+          perm_url = get_faq_link()
         end
       rescue Exception => e
         logmsg += " get_perm_path lookup/redirect error "
         logmsg += e.message.to_s
         logmsg += e.backtrace.inspect.to_s
         logger.info logmsg
-        perm_url = get_err_link()
+        perm_url = get_faq_link()
       end
       return perm_url
     end
 
     def get_err_link()
       link = @application_url.to_s + '/' + @@SHORTENER_WEB_DIR + '/' + @@SHORTENER_ERR_ROUTE
+      return link
+    end
+
+    def get_faq_link()
+      link = URI::HTTPS.build(:host => @@SHORTENER_HOST, :path => @@SEARCH_FAQ_PATH)
       return link
     end
 
@@ -365,7 +371,7 @@ class Tulle < Sinatra::Base
           if !newid.to_s.empty?
             link = get_perm_path( newid )
           else
-            link = get_err_link()
+            link = get_faq_link()
             logmsg += " error linkid not found in shorturls db: " + linkid
           end
         else
@@ -380,7 +386,7 @@ class Tulle < Sinatra::Base
       logmsg += e.message.to_s
       logmsg += e.backtrace.inspect.to_s
       logger.info logmsg
-      link = get_err_link()
+      link = get_faq_link()
     end
     logger.info logmsg
     redirect link, 301
@@ -437,7 +443,7 @@ class Tulle < Sinatra::Base
       logmsg += e.message
       logmsg += e.backtrace.inspect
       logger.info logmsg
-      link = URI::HTTPS.build(:host => @@SHORTENER_HOST, :path => @@SEARCH_FAQ_PATH)
+      link = get_faq_link()
       redirect link, 302
     end
   end
