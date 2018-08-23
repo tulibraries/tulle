@@ -108,7 +108,9 @@ class Tulle < Sinatra::Base
     end
 
     # Primo to Diamond reverse lookup for Blacklight catalog imports begin here
-    pidandmmsidcsvfile = "PID and MMS ID.csv"
+    # pidandmmsidcsvfile = "PID and MMS ID.csv"
+    # new mapping file created by cross-referencing 01tuli_inst_ds.csv and 01tuli_inst_BIB_IDs.csv
+    pidandmmsidcsvfile = "alma_primo_map.csv"
     if File.exist? pidandmmsidcsvfile
       puts "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
       csvsize =  IO.readlines(pidandmmsidcsvfile).size
