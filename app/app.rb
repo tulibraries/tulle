@@ -1,4 +1,5 @@
 require 'sinatra/base'
+require 'logger'
 require 'csv'
 # require 'pry'
 require 'lmdb'
