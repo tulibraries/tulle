@@ -3,12 +3,11 @@
 require "sinatra/base"
 require "logger"
 require "csv"
-# require 'pry'
 require "lmdb"
 
 class Tulle < Sinatra::Base
   @@SHORTENER_SCHEME = "http://"
-  @@SHORTENER_HOST = "library.temple.edu"  #'127.0.0.1:9393/'  '45.33.71.165'
+  @@SHORTENER_HOST = "library.temple.edu"
   @@SHORTENER_WEB_DIR = "link_exchange"
   @@SHORTENER_PATH = "r"
   @@SHORTENER_ERR_ROUTE = "err"
@@ -81,13 +80,8 @@ class Tulle < Sinatra::Base
   configure do  #  or def initialize () #super()
 
     set :logging, true
-
-    #set :public_folder, '/public'
-    #set :static, true
-
     @application_url = URI::HTTP.build(host: @@SHORTENER_HOST)
 
-    #puts  @db_mms2iep.stat[:entries]
     @@env = LMDB.new("./", mapsize: 1_000_000_000)
     @@db_diamond_primo = @@env.database("diamond_primo_db", create: true)
     @@db_shorturls = @@env.database("diamond_db", create: true)
@@ -117,7 +111,6 @@ class Tulle < Sinatra::Base
       puts "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
       csvsize = IO.readlines(pidandmmsidcsvfile).size
       puts "pidandmmsidcsvfile file size = " + csvsize.to_s
-      # if( @@db_alma.stat[:entries] < 2000000 )
       puts "Beginning pidandmmsidcsvfile IDs ingest " + Time.now.to_s
       loadfailed = false
       CSV.foreach(pidandmmsidcsvfile, headers: false, encoding: "utf-8") do |row|   # :converters => :integer
@@ -142,7 +135,6 @@ class Tulle < Sinatra::Base
       puts "Alma-Primo db size = " + @@db_alma.stat[:entries].to_s
       csvsize = IO.readlines(almapublishingidelectronicfull).size
       puts "almapublishingidelectronicfull file size = " + csvsize.to_s
-      # if( @@db_alma.stat[:entries] < 2000000 )
       puts "Beginning almapublishingidelectronicfull IDs ingest " + Time.now.to_s
       loadfailed = false
       CSV.foreach(almapublishingidelectronicfull, headers: true, encoding: "us-ascii", col_sep: ",") do |row|   # :converters => :integer
@@ -161,7 +153,6 @@ class Tulle < Sinatra::Base
         File.delete(almapublishingidelectronicfull)
       end
       puts "Done almapublishingidelectronicfull IDs ingest " + Time.now.to_s
-      # end
     end
 
     almapublishingidphysicalpostmigration = "alma-publishing-id-physical-post-migration.csv"
@@ -174,7 +165,6 @@ class Tulle < Sinatra::Base
       loadfailed = false
       CSV.foreach(almapublishingidphysicalpostmigration, headers: true, encoding: "utf-8", col_sep: ",") do |row|   # :converters => :integer
         begin
-          #mms, iep = row
           mms = row[0]
           iep = row[1]
           @@db_alma[iep.to_s] = mms.to_s
@@ -190,34 +180,6 @@ class Tulle < Sinatra::Base
       puts "Done almapublishingidphysicalpostmigration IDs ingest " + Time.now.to_s
       # end
     end
-
-    # if File.exist? "PID and MMS ID.csv"
-    #   puts @@db_primo.stat[:entries]
-    #   csvsize =  IO.readlines('PID and MMS ID.csv').size
-    #   puts csvsize
-    #   if( @@db_primo.stat[:entries] < 2000000 )
-    #     puts "Beginning primo IDs ingest " + Time.now.to_s
-    #     CSV.foreach("PID and MMS ID.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
-    #       mms, iep = row
-    #       @@db_primo[mms.to_s] = iep.to_s
-    #     end
-    #     puts "Done primo IDs ingest " + Time.now.to_s
-    #   end
-    # end
-    #
-    # if File.exist? "01tuli_inst_BIB_IDs.csv"
-    #   puts @@db_alma.stat[:entries]
-    #   csvsize = IO.readlines('01tuli_inst_BIB_IDs.csv').size
-    #   puts csvsize
-    #   if( @@db_alma.stat[:entries] < 2000000 )
-    #     puts "Beginning alma IDs ingest " + Time.now.to_s
-    #     CSV.foreach("01tuli_inst_BIB_IDs.csv", :headers => false, :encoding => 'utf-8') do |row|   # :converters => :integer
-    #       mms, diamond = row
-    #       @@db_alma[diamond.to_s[0..7]] = mms.to_s
-    #     end
-    #     puts "Done alma IDs ingest " + Time.now.to_s
-    #   end
-    # end
 
     augmentfile = "Diamond-Primo-manual-updated.csv"
     if File.exist? augmentfile
@@ -392,7 +354,6 @@ class Tulle < Sinatra::Base
     end
     logger.info logmsg
     redirect link, 301
-    #301 moved permanently
   end
 
 
