@@ -2,7 +2,6 @@ version: 2
 
 jobs:
   build:
-    working_directory: ~/tulle
     docker:
       - image: circleci/ruby:2.6.5
         environment:
