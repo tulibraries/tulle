@@ -56,6 +56,7 @@ class Tulle < Sinatra::Base
   @@hash_base = 36
 
   logfilename = "#{settings.root}/log/#{settings.environment}.log"
+
   $logger = ::Logger.new(logfilename)
   $logger.level = Logger::DEBUG
   # $logger.sync = true
@@ -368,7 +369,6 @@ class Tulle < Sinatra::Base
       link = URI::HTTPS.build(host: @@PRIMO_HOST, path: @@PRIMO_ACCOUNT_PATH, query: @@PRIMO_ACCOUNT_QUERY)
       logger.info logmsg
       redirect link, 301
-      #301 moved permanently
     rescue Exception => e
       logmsg += " shorturl patroninfo error "
       logmsg += e.message
