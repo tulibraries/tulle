@@ -288,14 +288,12 @@ class Tulle < Sinatra::Base
     def dump_db(db)
       db_array = {}
       db.cursor do |c|
-        c.first
+        c.first rescue return db_array
         loop do
           key, value = c.get
-          #puts key + " " + value
           db_array[key] = value
           break if !c.next
         end
-        #c.close
       end
       return db_array
     end
