@@ -13,6 +13,10 @@ jobs:
           name: Bundle install dependencies.
           command: bundle install --path vendor/bundle
 
+      - run:
+          name: Add missing log file.
+          command: touch ~/project/app/log/test.log
+
       - type: shell
         name: Run linter.
         command: bundle exec rubocop
