@@ -1,0 +1,23 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.6.5
+        environment:
+          APP_ENV: test
+    steps:
+      - checkout
+
+      - run:
+          name: Bundle install dependencies.
+          command: bundle install --path vendor/bundle
+
+      - type: shell
+        name: Run linter.
+        command: bundle exec rubocop
+
+      - type: shell
+        name: Run tests.
+        command: bundle exec rspec
+
