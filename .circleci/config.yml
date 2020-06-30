@@ -1,7 +1,29 @@
 version: 2
 
+workflows:
+  version: 2
+  test:
+    jobs:
+      - run_tests
+  deploy:
+    jobs:
+      - request-prod-deploy:
+          type: approval
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
+      - prod_deploy:
+          requires:
+            - request-prod-deploy
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
 jobs:
-  build:
+  run_tests:
     docker:
       - image: circleci/ruby:2.6.5
         environment:
@@ -21,3 +43,24 @@ jobs:
         name: Run tests.
         command: bundle exec rspec
 
+  prod_deploy:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          PIPENV_VENV_IN_PROJECT: true
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "2f:37:66:17:11:ae:f9:0f:9e:52:98:41:fe:d0:0c:78"
+      - run:
+          name: 'Run Ansible Airflow Playbook for Prod'
+          command: |
+            cd ..
+            git clone --single-branch --branch master https://github.com/tulibraries/ansible-playbook-tulle.git
+            cd ansible-playbook-tulle
+            sudo pip install pipenv
+            pipenv install
+            echo $ANSIBLE_VAULT_PASSWORD > ~/.vault
+            pipenv run ansible-galaxy install -r requirements.yml
+            pipenv run ansible-playbook -i inventory/prod playbook.yml --vault-password-file=~/.vault -e app_git_branch=$CIRCLE_TAG
