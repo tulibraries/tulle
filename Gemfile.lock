@@ -18,7 +18,7 @@ GEM
     extlib (0.9.16)
     highline (2.0.3)
     jaro_winkler (1.5.4)
-    lmdb (0.4.8)
+    lmdb (0.5.3)
     method_source (1.0.0)
     mini_mime (1.0.2)
     mini_portile2 (2.4.0)
