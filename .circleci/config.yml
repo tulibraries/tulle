@@ -25,7 +25,7 @@ workflows:
 jobs:
   run_tests:
     docker:
-      - image: circleci/ruby:2.7.2
+      - image: cimg/ruby:2.7.2
         environment:
           APP_ENV: test
     steps:
@@ -45,7 +45,7 @@ jobs:
 
   prod_deploy:
     docker:
-      - image: circleci/python:3.6
+      - image: cimg/python:3.7.11
         environment:
           PIPENV_VENV_IN_PROJECT: true
     steps:
@@ -59,7 +59,6 @@ jobs:
             cd ..
             git clone --single-branch --branch main https://github.com/tulibraries/ansible-playbook-tulle.git
             cd ansible-playbook-tulle
-            sudo pip install pipenv
             pipenv install
             echo $ANSIBLE_VAULT_PASSWORD > ~/.vault
             pipenv run ansible-galaxy install -r requirements.yml
