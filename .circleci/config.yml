@@ -63,3 +63,4 @@ jobs:
             echo $ANSIBLE_VAULT_PASSWORD > ~/.vault
             pipenv run ansible-galaxy install -r requirements.yml
             pipenv run ansible-playbook -i inventory/prod playbook.yml --vault-password-file=~/.vault -e app_git_branch=$CIRCLE_TAG
+          no_output_timeout: 30m
