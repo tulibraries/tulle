@@ -79,7 +79,7 @@ GEM
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
-    selenium-webdriver (4.12.0)
+    selenium-webdriver (4.13.1)
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
@@ -96,7 +96,7 @@ GEM
       highline (>= 1.4.0)
     tilt (2.2.0)
     unicode-display_width (2.4.2)
-    websocket (1.2.9)
+    websocket (1.2.10)
     xpath (3.2.0)
       nokogiri (~> 1.8)
 
