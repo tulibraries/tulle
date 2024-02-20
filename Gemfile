@@ -2,6 +2,7 @@
 
 source "https://rubygems.org"
 
+gem "base64", "0.1.1" 
 gem "sinatra"
 gem "lmdb"
 gem "rackup"
