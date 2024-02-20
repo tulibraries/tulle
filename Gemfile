@@ -4,6 +4,7 @@ source "https://rubygems.org"
 
 gem "sinatra"
 gem "lmdb"
+gem "rackup"
 
 group :development do
   gem "shotgun"
