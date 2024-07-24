@@ -303,6 +303,7 @@ class Tulle < Sinatra::Base
 
   get "/" + @@SHORTENER_STATS_ROUTE do
     @stats = dump_db(@@db_shorturls)
+    @stats.transform_values! { |value| get_perm_path(value) }
     erb :stats
   end
 

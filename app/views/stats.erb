@@ -8,9 +8,11 @@
 </head>
 <body>
     <div class="container">
-      <% @stats.each do |key,value| %>
-          <h2><%= key %> = <%= value %></h2>
-      <% end %>
+      <p>
+        <% @stats.each do |key,value| %>
+            <%= key %>, <%= value %><br>
+        <% end %>
+      </p>
     </div>
   </body>
 </html>
