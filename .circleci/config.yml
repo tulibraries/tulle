@@ -5,23 +5,7 @@ workflows:
   test:
     jobs:
       - run_tests
-  deploy:
-    jobs:
-      - request-prod-deploy:
-          type: approval
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*$/
-      - prod_deploy:
-          requires:
-            - request-prod-deploy
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*$/
+  
 jobs:
   run_tests:
     docker:
@@ -42,25 +26,3 @@ jobs:
       - type: shell
         name: Run tests.
         command: bundle exec rspec
-
-  prod_deploy:
-    docker:
-      - image: cimg/python:3.10.13
-        environment:
-          PIPENV_VENV_IN_PROJECT: true
-    steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints:
-            - "96:52:81:94:2a:1f:32:82:cd:b5:2d:e3:e3:9e:9d:08"
-      - run:
-          name: 'Run Ansible Airflow Playbook for Prod'
-          command: |
-            cd ..
-            git clone --single-branch --branch main https://github.com/tulibraries/ansible-playbook-tulle.git
-            cd ansible-playbook-tulle
-            pipenv install
-            echo $ANSIBLE_VAULT_PASSWORD > ~/.vault
-            pipenv run ansible-galaxy install -r requirements.yml
-            pipenv run ansible-playbook -i inventory/prod playbook.yml --vault-password-file=~/.vault -e app_git_branch=$CIRCLE_TAG
-          no_output_timeout: 30m
